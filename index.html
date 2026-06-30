@@ -1331,7 +1331,7 @@
       <tr><td>Cloud Spanner — Spend-based</td><td>Varies</td><td>Varies</td><td>Use Spanner editions pricing model</td></tr>
     </tbody>
   </table></div>
-  <div class="callout"><b>Note:</b> Sustained Use Discounts (SUDs) are automatic (no commitment) for N1, N2, N2D, C2, C2D Compute Engine VMs — up to 30% for full-month usage. SUDs and CUDs do <em>not</em> stack.</div>
+  <div class="callout"><b>Note:</b> Sustained Use Discounts (SUDs) are automatic (no commitment) for N1 and memory-optimized (M) VMs — up to 30% for full month; N2, N2D, C2 cap at 20%. SUDs and CUDs do <em>not</em> stack.</div>
 
   <h2 class="sec">RPO / RTO Tiers</h2>
   <div class="tbl"><table>
@@ -1537,6 +1537,96 @@
       <li><b>Shared VPC vs Peering:</b> Shared VPC — same org, centralized network team; Peering — different orgs or independent networks, non-transitive, no overlapping CIDRs.</li>
     </ul>
   </div>
+
+      <!--XTRAPS2-->
+      <h2 class="sec">More high-yield triggers (advanced)</h2>
+      <h3 class="sub">Compute &amp; GKE</h3>
+<div class="card"><ul class="trig">
+  <li><span class="k">pods pending but nodes exist and have headroom — autoscaler isn't adding nodes</span><span class="pill p-compute">Check HPA/VPA conflict: VPA in Auto mode restarts pods and changes requests; HPA on same CPU metric fights it — use VPA on resources + HPA on custom metrics only</span></li>
+  <li><span class="k">workload needs a GPU node pool that doesn't yet exist and no node pool was pre-created</span><span class="pill p-compute">Node Auto Provisioning (NAP) — triggers on unschedulable resource requests and creates the right node pool; Cluster Autoscaler only scales existing pools</span></li>
+  <li><span class="k">VPA is set but pods never get right-sized without being restarted manually</span><span class="pill p-compute">VPA mode must be "Auto" or "Recreate" to apply recommendations; "Off" only shows recommendations, "Initial" only applies at pod creation — set mode: Auto for live right-sizing</span></li>
+  <li><span class="k">batch ML training job that runs for 5 days and must not serve HTTP</span><span class="pill p-compute">Cloud Run Jobs — task timeout up to 168 hours (7 days), no port/HTTP endpoint needed, up to 10,000 parallel tasks; Cloud Run Services are for long-lived HTTP listeners</span></li>
+  <li><span class="k">need to prevent live migration of VMs and co-locate for low latency MPI</span><span class="pill p-compute">Placement Policy (compact) — forces VMs onto same physical cluster for lowest latency; combine with sole-tenant nodes only if you also need physical host isolation from other customers</span></li>
+  <li><span class="k">regulatory requirement: no Google personnel can live-migrate or access the physical host</span><span class="pill p-compute">Sole-Tenant Nodes — dedicated physical server; Confidential VM encrypts memory at runtime but does NOT guarantee sole tenancy of the physical host</span></li>
+  <li><span class="k">memory encryption at rest on VM RAM to protect against hypervisor compromise</span><span class="pill p-compute">Confidential VM (AMD SEV or Intel TDX) — encrypts VM memory in use; Shielded VM only verifies boot integrity (UEFI, vTPM, Secure Boot) but does not encrypt RAM</span></li>
+  <li><span class="k">GKE nodes should reject all workloads except those with a specific toleration</span><span class="pill p-compute">Node Taints (NoSchedule or NoExecute) + matching Pod Tolerations — node taints are the mechanism; node labels alone do not prevent scheduling, only guide affinity rules</span></li>
+</ul></div>
+
+<h3 class="sub">Storage &amp; Databases</h3>
+<div class="card"><ul class="trig">
+  <li><span class="k">Cloud Storage bucket cost optimisation — objects vary in access frequency unpredictably over time</span><span class="pill p-data">Autoclass — automatically transitions objects between Standard, Nearline, Coldline, Archive based on access patterns; lifecycle rules require you to specify fixed age/condition thresholds upfront</span></li>
+  <li><span class="k">legal hold on Cloud Storage objects — must prevent any deletion or overwrite including by bucket owner</span><span class="pill p-data">Bucket Lock with Retention Policy (WORM) — once locked, even project owner cannot shorten retention or delete objects; Object Hold (legal/event-based) is per-object and can be released; Retention Policy lock is irreversible</span></li>
+  <li><span class="k">PostgreSQL-compatible DB, single region, OLAP queries alongside OLTP — up to 100x faster analytics</span><span class="pill p-data">AlloyDB with Columnar Engine — adds in-memory columnar store on top of OLTP; Cloud SQL PostgreSQL lacks a columnar engine; AlloyDB is not globally distributed (use Spanner for that)</span></li>
+  <li><span class="k">Spanner schema: child table rows always fetched with parent — minimise cross-split reads</span><span class="pill p-data">Table Interleaving — physically co-locates child rows with their parent row in the same split; foreign keys enforce referential integrity but do NOT co-locate data</span></li>
+  <li><span class="k">Bigtable: isolate batch analytics reads from production OLTP traffic on the same instance</span><span class="pill p-data">App Profiles with single-cluster routing — route batch jobs to a dedicated cluster, production to another; replication copies data; app profiles choose which cluster each app endpoint hits</span></li>
+  <li><span class="k">Bigtable: very large dataset (&gt;10 TB) with infrequent, non-latency-sensitive batch scans</span><span class="pill p-data">HDD storage tier — ~10x cheaper storage cost than SSD; storage type is permanent and per-instance; SSD is required for latency-sensitive or random-access workloads</span></li>
+  <li><span class="k">Spanner also needs OLAP analytics on live operational data — globally consistent</span><span class="pill p-data">Spanner Columnar Engine (built-in) — accelerates analytical queries up to 200x on live data without ETL; AlloyDB columnar engine serves the same need but is single-region/PostgreSQL-only</span></li>
+  <li><span class="k">continuous CDC replication from Cloud SQL into BigQuery for real-time analytics</span><span class="pill p-data">Datastream — serverless CDC (change data capture) that continuously replicates; Database Migration Service (DMS) handles one-time homogeneous migrations into Cloud SQL/AlloyDB, not ongoing streaming to BQ</span></li>
+  <li><span class="k">need to read same static ML model weights from many GCE VMs concurrently with maximum throughput</span><span class="pill p-data">Hyperdisk ML — multi-reader mode (attach one volume to many VMs read-only), up to 2 TiB/s aggregate throughput; Hyperdisk Extreme maximises IOPS for a single writer; Filestore is NFS (higher latency)</span></li>
+  <li><span class="k">block storage for latency-sensitive OLTP database — need sub-millisecond latency, single writer</span><span class="pill p-data">Hyperdisk Extreme — highest IOPS (up to 350K) from one volume; Hyperdisk Balanced for mixed workloads at lower cost; Hyperdisk Throughput is for sequential/analytics (cheap but NOT sub-ms)</span></li>
+  <li><span class="k">BigQuery: unpredictable bursty workloads need guaranteed minimum slots plus burst capacity</span><span class="pill p-data">Reservations with Autoscaling (Editions model) — set a baseline slot count that scales automatically; Flex Slots add short-term capacity billed by the second with 60-second minimum; on-demand has no slot guarantees</span></li>
+  <li><span class="k">Filestore for GKE stateful workloads requiring 99.99% availability and multi-zone resilience</span><span class="pill p-data">Filestore Enterprise (Regional) — synchronously replicates across 3 zones, 99.99% SLA, supports Multishares; Zonal tier is single-zone 99.9% SLA; Basic tiers have no published SLA</span></li>
+  <li><span class="k">ETL pipeline with visual drag-and-drop interface, no Beam/Spark coding, 200+ connectors</span><span class="pill p-data">Cloud Data Fusion — code-free IDE for ETL/ELT pipelines; Dataflow requires Apache Beam code; Datastream is CDC-only; choose Data Fusion when the team lacks streaming/Beam expertise</span></li>
+</ul></div>
+
+<h3 class="sub">Networking</h3>
+<div class="card"><ul class="trig">
+  <li><span class="k">connect 20 VPC networks with transitive routing — avoid full mesh peering complexity</span><span class="pill p-net">Network Connectivity Center (NCC) — hub-and-spoke, transitive by design, supports up to 250 VPCs; VPC Peering is non-transitive (A↔B, B↔C does not give A↔C); Shared VPC requires host project ownership</span></li>
+  <li><span class="k">service in VPC needs private IP access to a managed Google service without VPC Peering</span><span class="pill p-net">Private Service Connect (PSC) — creates a single endpoint IP in your VPC for the target service; Private Service Access (PSA) uses VPC Peering under the hood and requires reserving a /16+ range; PSC avoids IP overlap problems</span></li>
+  <li><span class="k">need HA VPN with 99.99% SLA — minimum topology requirement</span><span class="pill p-net">Two HA VPN gateways each with 2 interfaces, 4 BGP tunnels total (2 per peer gateway) — configuring tunnels on only one interface of an HA VPN gateway gives 99.9%, not 99.99%</span></li>
+  <li><span class="k">Dedicated Interconnect at 99.99% SLA — minimum physical circuit and metro requirements</span><span class="pill p-net">4 VLAN attachments across 2 circuits in 2 different metro locations, each metro using different edge availability domains — single-metro Interconnect achieves only 99.9%</span></li>
+  <li><span class="k">encrypt Interconnect traffic at Layer 2 between on-prem router and Google edge</span><span class="pill p-net">MACsec on Dedicated Interconnect — encrypts L2 frames between CPE and Google edge; HA VPN over Interconnect encrypts at L3/IPsec but caps each tunnel at ~3 Gbps; use MACsec when you need line-rate L2 encryption</span></li>
+  <li><span class="k">enforce firewall rules hierarchically across org with override priority over project-level rules</span><span class="pill p-net">Hierarchical Firewall Policies — applied at org or folder, evaluated before VPC firewall rules; cannot be overridden by lower-level rules when action is "goto_next" vs "allow/deny"; VPC firewall rules are project-scoped only</span></li>
+  <li><span class="k">internal TCP/UDP load balancing that preserves client source IP end-to-end (direct server return)</span><span class="pill p-net">Passthrough Network Load Balancer (internal) — no proxy, packets delivered unchanged, DSR for responses; proxy-based LBs (Application LB, Proxy NLB) terminate the TCP connection and open a new one to backend</span></li>
+  <li><span class="k">DNS routing — send 90% of traffic to primary region, 10% to canary region</span><span class="pill p-net">Cloud DNS Weighted Round Robin (WRR) routing policy — assign weights per record set; Geolocation policy routes by client geography, not percentages; WRR and Geolocation cannot be combined on same record</span></li>
+</ul></div>
+
+<h3 class="sub">Security</h3>
+<div class="card"><ul class="trig">
+  <li><span class="k">encryption key stored in your own on-premises or third-party HSM, not in Google KMS</span><span class="pill p-sec">External Key Manager (EKM) — key material never enters Google; every crypto operation calls out to your external HSM; CMEK stores keys inside Cloud KMS (Google's infrastructure); CSEK supplies raw key bytes per-request only for GCS and Compute Engine disks</span></li>
+  <li><span class="k">FIPS 140-2 Level 3 validated hardware key storage inside Google Cloud KMS</span><span class="pill p-sec">Cloud HSM protection level within Cloud KMS — same KMS API but keys generated and stored in Google's HSMs; default Cloud KMS uses software protection level; EKM uses external HSMs outside Google</span></li>
+  <li><span class="k">visibility into when Google SREs access your data vs actively approving it — key distinction</span><span class="pill p-sec">Access Transparency (passive audit log) vs Access Approval (active customer-approval gate before Google staff can proceed) — Access Transparency requires no action from you; Access Approval blocks the Google engineer until you explicitly approve</span></li>
+  <li><span class="k">grant your own engineer time-limited, just-in-time elevated IAM role with approval workflow</span><span class="pill p-sec">Privileged Access Manager (PAM) — JIT temporary role elevation with optional approver; Access Approval controls Google staff access, not your own users; IAM Conditions can restrict by time but have no approval workflow</span></li>
+  <li><span class="k">block a specific IAM permission org-wide regardless of what roles are granted</span><span class="pill p-sec">IAM Deny Policy — overrides allow policies for specified permissions; Org Policy restricts resource configurations and API usage (not IAM permissions directly); VPC-SC restricts service API calls based on network context</span></li>
+  <li><span class="k">prevent data exfiltration from BigQuery even if credentials are stolen — context-based perimeter</span><span class="pill p-sec">VPC Service Controls — creates a service perimeter; restricts BQ API calls based on network/identity context; IAM Deny only blocks identity permissions; Org Policy restricts configurations but not network-context-based access</span></li>
+  <li><span class="k">off-cluster workload (GitHub Actions CI) needs GCP access without storing a service account key</span><span class="pill p-sec">Workload Identity Federation (external) — federates OIDC/AWS/Azure tokens to short-lived GCP credentials; GKE Workload Identity (Workload Identity Federation for GKE) is for pods inside a GKE cluster and is configured automatically by GKE — do not use it for CI pipelines</span></li>
+  <li><span class="k">only allow container images with a signed attestation from your CI/CD pipeline to deploy to GKE</span><span class="pill p-sec">Binary Authorization — enforces deploy-time attestation policy on GKE and Cloud Run; Key Access Justifications controls cryptographic key access for Assured Workloads, not image provenance</span></li>
+</ul></div>
+
+<h3 class="sub">Operations &amp; Cost</h3>
+<div class="card"><ul class="trig">
+  <li><span class="k">SLO alert fires too often on transient spikes — want to alert only on sustained budget consumption</span><span class="pill p-ops">Multi-window multi-burn-rate alerting — requires BOTH short window (e.g. 5 min) AND long window (e.g. 1 hr) to exceed threshold simultaneously; single-window burn-rate alerts produce high false-positive rates on short spikes</span></li>
+  <li><span class="k">error budget exhausted before end of period — what governs the response process</span><span class="pill p-ops">Error Budget Policy — defines what actions to take (freeze releases, increase toil budget) when error budget is depleted; SLO defines the target; SLA is the contractual commitment to customers with financial penalties</span></li>
+  <li><span class="k">replacing Deployment Manager — Google's recommended successor as of 2026</span><span class="pill p-ops">Infrastructure Manager — managed Terraform-based IaC service; Deployment Manager EOL is March 31, 2026; Infrastructure Manager handles state storage/locking automatically, no need for a separate GCS state bucket</span></li>
+  <li><span class="k">need compute cost savings that apply across multiple regions and VM families without locking to one machine type</span><span class="pill p-ops">Flexible CUDs (spend-based) — 28% off (1yr) or 46% off (3yr) on Compute Engine/GKE/Cloud Run spend across billing account regardless of region or machine type; Resource CUDs lock to a specific region and machine family but offer up to 57–70% discount</span></li>
+  <li><span class="k">guarantee VM capacity is reserved in a specific zone even if not running 24/7</span><span class="pill p-ops">Reservations — guarantee zonal capacity; CUDs (flexible or resource) are discounts on usage, NOT capacity reservations; combine both if you need both guaranteed capacity and discounted pricing</span></li>
+  <li><span class="k">identify which function call or code path is consuming the most CPU in a live production service</span><span class="pill p-ops">Cloud Profiler — continuous statistical CPU/heap profiling of running applications; Cloud Trace shows request latency and spans; Profiler pinpoints hot code paths, Trace shows where time is spent across service calls</span></li>
+  <li><span class="k">route all audit logs from all projects to a central Security project BigQuery dataset</span><span class="pill p-ops">Aggregated Log Sink at organization or folder level — single sink captures logs across all child projects; project-level sinks only capture that project's logs; Log Router is the engine behind sinks</span></li>
+</ul></div>
+
+<h3 class="sub">GenAI &amp; ML</h3>
+<div class="card"><ul class="trig">
+  <li><span class="k">need RAG over enterprise docs with minimal code — managed chunking, embedding, retrieval</span><span class="pill p-ai">Vertex AI RAG Engine — fully managed RAG orchestration; Vector Search is a lower-level ANN index you manage yourself; Vertex AI Search is turnkey search with a UI but less customisation over chunking/embedding choices</span></li>
+  <li><span class="k">semantic nearest-neighbour search over billion-scale vectors with custom embedding model</span><span class="pill p-ai">Vertex AI Vector Search — low-level ANN (approximate nearest neighbour) infrastructure, you bring embeddings; RAG Engine orchestrates the full RAG pipeline on top of Vector Search or other backends</span></li>
+  <li><span class="k">contact centre agent needs real-time suggested replies during a live customer call</span><span class="pill p-ai">Agent Assist (CCAI) — provides real-time suggestions to human agents during calls; Conversational Agents (Dialogflow CX) powers fully automated virtual agents; CCAI Platform is the broader suite</span></li>
+  <li><span class="k">generate synthetic images from text prompts in a Vertex AI pipeline</span><span class="pill p-ai">Imagen — Google's text-to-image model on Vertex AI; Veo is text-to-video; Chirp is speech recognition/TTS; Gemini is multimodal general reasoning — pick the purpose-built model over Gemini for image generation tasks on the exam</span></li>
+  <li><span class="k">detect drift in a deployed ML model's predictions over time</span><span class="pill p-ai">Vertex AI Model Monitoring — monitors prediction drift and training-serving skew on deployed endpoints; Explainable AI shows feature attributions for individual predictions (why, not drift); Model Armor filters harmful inputs/outputs at inference</span></li>
+  <li><span class="k">classify and extract structured fields from scanned invoices and receipts at scale</span><span class="pill p-ai">Document AI — purpose-built OCR + ML extractors for documents; Gemini can read documents but Document AI has pre-trained parsers (Invoice parser, Receipt parser) optimised for structured extraction at scale</span></li>
+  <li><span class="k">run ML training with features that must be consistent between training and serving (no skew)</span><span class="pill p-ai">Vertex AI Feature Store — centralised feature serving with point-in-time correctness; prevents training-serving skew; BigQuery ML trains directly on BQ tables but has no managed feature registry or point-in-time lookup</span></li>
+  <li><span class="k">LLM responses must be grounded in your internal documents to reduce hallucination</span><span class="pill p-ai">Grounding with Vertex AI Search or RAG Engine — attaches retrieved document chunks as context to the LLM prompt; Model Monitoring detects drift post-deployment; Explainable AI explains individual predictions — neither prevents hallucination</span></li>
+</ul></div>
+
+<h3 class="sub">Migration</h3>
+<div class="card"><ul class="trig">
+  <li><span class="k">assess on-premises VM estate for cloud migration fit and TCO before migrating</span><span class="pill p-mig">Migration Center — discovery, assessment, and business case tool; Migrate to Virtual Machines (M2VM) is the actual migration tool; run Migration Center first to decide what to migrate and in what order</span></li>
+  <li><span class="k">lift-and-shift 200 VMware VMs from on-premises to Compute Engine with minimal downtime</span><span class="pill p-mig">Migrate to Virtual Machines (M2VM) — continuous background replication then cutover; Migrate to Containers (M2C) converts VMs to container images for GKE; M2VM is the right tool for rehost (lift-and-shift), M2C for modernisation to containers</span></li>
+  <li><span class="k">after VM is on GCE, want to modernise it into a GKE container workload</span><span class="pill p-mig">Migrate to Containers (M2C) — analyses the running GCE VM, extracts the app and dependencies, generates a container image and Kubernetes YAML; M2VM is for the initial VM-to-VM migration step</span></li>
+  <li><span class="k">migrate a MySQL database to Cloud SQL with minimal downtime using continuous replication</span><span class="pill p-mig">Database Migration Service (DMS) — managed homogeneous migration with CDC replication for near-zero downtime cutover; Datastream is for ongoing CDC to analytics destinations (e.g. BigQuery), not one-time DB migration</span></li>
+  <li><span class="k">transfer 500 TB of on-premises data to Cloud Storage — network transfer would take weeks</span><span class="pill p-mig">Transfer Appliance — physical device shipped to your site, loaded, shipped back to Google; Storage Transfer Service is for online transfers from S3, Azure, another GCS bucket, or HTTP sources — not for bulk offline on-prem data</span></li>
+  <li><span class="k">gradually replace a monolith by routing new features to microservices while old system stays live</span><span class="pill p-mig">Strangler-Fig pattern — incrementally route traffic to new services around the old monolith; Big Bang rewrite is a different (riskier) approach; use a reverse proxy or API gateway to split traffic</span></li>
+  <li><span class="k">run GKE workloads across on-premises and GCP with unified policy and config management</span><span class="pill p-mig">Anthos / GKE Enterprise with Config Management — extends GKE control plane to on-prem (Anthos clusters on VMware/bare metal) with fleet-wide policy via ACM; standalone GKE is cloud-only; Anthos is the hybrid/multi-cloud answer</span></li>
+  <li><span class="k">S3 bucket to Cloud Storage ongoing sync — data generated daily by a third-party service</span><span class="pill p-mig">Storage Transfer Service — scheduled or continuous online transfers from S3, Azure Blob, HTTP, or on-prem; Transfer Appliance is a one-time offline physical transfer — not suitable for daily recurring syncs</span></li>
+</ul></div>
 </section>
 
     <!-- QUIZ -->
@@ -1678,7 +1768,7 @@
           <td><code class="svc">Persistent Disk (PD)</code></td>
           <td>Durable block storage for GCE and GKE; Standard (HDD), Balanced (SSD), SSD (PD-SSD), Extreme (PD-Extreme); multi-reader mode available</td>
           <td>Boot disks, database volumes, shared read-only datasets across VMs</td>
-          <td>Max size 64 TB per PD-SSD/Balanced, 257 TB for Extreme; single-writer attach (except multi-reader); IOPS/throughput scales with disk size, not just instance size</td>
+          <td>Max size 64 TiB per disk (PD-SSD, Balanced, Extreme); 257 TiB is the per-VM aggregate limit, not a single disk; single-writer attach (except multi-reader); IOPS/throughput scales with disk size, not just instance size</td>
         </tr>
         <tr>
           <td><code class="svc">Hyperdisk</code></td>
@@ -1718,7 +1808,7 @@
           <td><code class="svc">Cloud SQL</code></td>
           <td>Managed MySQL, PostgreSQL, and SQL Server; automatic failover, read replicas, point-in-time recovery, IAM auth</td>
           <td>OLTP relational workloads that don't need horizontal write scaling; modernize on-premises RDBMS</td>
-          <td>No horizontal write scaling (single primary only); max storage 64 TB per instance; cannot decrease storage size without recreating instance; max 96 vCPU / 624 GB RAM</td>
+          <td>No horizontal write scaling (single primary only); max storage 64 TB per instance; cannot decrease storage size without recreating instance; up to 128 vCPU / 864 GB RAM (Enterprise Plus, performance-optimized)</td>
         </tr>
         <tr>
           <td><code class="svc">AlloyDB for PostgreSQL</code></td>
