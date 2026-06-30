@@ -62,9 +62,9 @@
   pre.tree b{color:var(--compute)}
 
   .trig{list-style:none;margin:6px 0;padding:0}
-  .trig li{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:baseline;padding:8px 0;border-bottom:1px dotted var(--soft)}
-  .trig li:last-child{border-bottom:0}.trig .k{font-size:13.3px}
-  .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700;font-family:var(--mono);white-space:nowrap}
+  .trig li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;align-items:baseline;padding:8px 0;border-bottom:1px dotted var(--soft)}
+  .trig li:last-child{border-bottom:0}.trig .k{font-size:13.3px;flex:1 1 46%;min-width:0}
+  .pill{display:inline-block;padding:2px 9px;border-radius:12px;font-size:12px;font-weight:700;font-family:var(--mono);white-space:normal;line-height:1.45;text-align:left;max-width:100%}
   .p-compute{background:var(--compute-bg);color:var(--compute)}.p-data{background:var(--data-bg);color:var(--data)}
   .p-net{background:var(--net-bg);color:var(--net)}.p-sec{background:var(--sec-bg);color:var(--sec)}
   .p-ops{background:var(--ops-bg);color:var(--ops)}.p-ai{background:var(--ai-bg);color:var(--ai)}
