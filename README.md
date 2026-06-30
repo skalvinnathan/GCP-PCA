@@ -4,7 +4,7 @@ A self-contained study site for the Google Cloud **Professional Cloud Architect*
 
 ## Contents
 
-- **`index.html`** — multi-page study hub: domain notes (Compute, Storage & Databases, Networking, Security & IAM, Operations & Cost, GenAI & ML, Well-Architected & Migration), the exam blueprint, a dedicated page per current case study (EHR Healthcare, Altostrat Media, Cymbal Retail, KnightMotives Automotive) with reveal-answer prep questions, and a 102-question self-grading practice quiz.
+- **`index.html`** — multi-page study hub: domain notes (Compute, Storage & Databases, Networking, Security & IAM, Operations & Cost, GenAI & ML, Well-Architected & Migration), the exam blueprint, a dedicated page per current case study (EHR Healthcare, Altostrat Media, Cymbal Retail, KnightMotives Automotive) with reveal-answer prep questions, and a 500-question self-grading practice quiz.
 - **`cheatsheet.html`** — one-page keyword→service quick reference for last-minute review.
 
 ## Use it
