@@ -167,6 +167,8 @@
     <button data-go="arch"><span class="dot" style="background:#c2410c"></span>Reference Architectures</button>
     <button data-go="numbers"><span class="dot" style="background:#0891b2"></span>Numbers &amp; Limits</button>
     <button data-go="traps"><span class="dot" style="background:#be123c"></span>Master Trap List</button>
+    <button data-go="catalog"><span class="dot" style="background:#0e7490"></span>What GCP Provides</button>
+    <button data-go="compare"><span class="dot" style="background:#b45309"></span>GCP vs AWS vs Azure</button>
     <div class="grp">Case Studies</div>
     <button data-go="ehr" class="sub"><span class="dot" style="background:var(--case)"></span>EHR Healthcare</button>
     <button data-go="alto" class="sub"><span class="dot" style="background:var(--case)"></span>Altostrat Media</button>
@@ -1338,6 +1340,1369 @@
 </section>
 
     <!-- QUIZ -->
+    <section class="page" id="catalog">
+  <div class="eyebrow">Reference - Service Catalog</div>
+  <h1 class="pt">What GCP Provides</h1>
+  <p class="lede">A comprehensive catalog of every GCP service a Professional Cloud Architect must know, grouped by category. Pay close attention to key limitations — exam distractors almost always exploit gaps in service constraints.</p>
+  <div class="accent-bar" style="background:#0e7490"></div>
+
+  <h2 class="sec">Compute</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>What it provides</th>
+          <th>Why / when to choose it</th>
+          <th>Key limitation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code class="svc">Compute Engine</code></td>
+          <td>IaaS VMs (custom machine types, preemptible/Spot VMs, GPUs, TPUs); managed instance groups (MIGs) with autoscaling and rolling updates</td>
+          <td>Full OS control, lift-and-shift migrations, HPC, GPU/ML training, custom kernels or licensing requirements</td>
+          <td>You manage the OS, patching, and agents; preemptible/Spot VMs can be reclaimed with 30-second notice; no free sustained-use discount on N2D, Tau T2D</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Managed Instance Groups (MIG)</code></td>
+          <td>Auto-healing, autoscaling, rolling updates, and multi-zone distribution of identical VM instances</td>
+          <td>Stateless web tiers, batch fleets, HA across zones without manual work</td>
+          <td>All instances share one template; stateful MIGs with persistent disks have slower rolling updates</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Sole-Tenant Nodes</code></td>
+          <td>Dedicated physical hosts for GCE VMs; other tenants' workloads never share the host</td>
+          <td>BYOL Windows Server/SQL Server, compliance mandates requiring physical isolation (HIPAA, FedRAMP)</td>
+          <td>Higher cost; must right-size to the physical node; limited availability in some regions</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Bare Metal Solution</code></td>
+          <td>Customer-dedicated physical servers co-located in Google data centers, connected via low-latency peering to GCP services</td>
+          <td>Oracle RAC, SAP HANA, workloads that cannot be virtualized but need GCP proximity</td>
+          <td>Not managed by GCP (no live migration, no autoscaling); long provisioning lead times; expensive minimum commitment</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Preemptible / Spot VMs</code></td>
+          <td>Surplus GCE capacity at up to 91% discount; interrupted when capacity needed elsewhere</td>
+          <td>Fault-tolerant batch, rendering, ML training where jobs can checkpoint and restart</td>
+          <td>Max 24-hour lifetime (preemptible); Spot can be reclaimed within 30 seconds at any time; not suitable for long-running stateful services</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">Containers &amp; Serverless</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>What it provides</th>
+          <th>Why / when to choose it</th>
+          <th>Key limitation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code class="svc">Google Kubernetes Engine (GKE)</code></td>
+          <td>Managed Kubernetes: control-plane managed by Google, Autopilot mode fully manages node pools; integrates with Cloud Load Balancing, Workload Identity, Binary Authorization</td>
+          <td>Microservices, complex orchestration, multi-container workloads, portability across clouds</td>
+          <td>Autopilot restricts DaemonSets and privileged containers; Standard mode still requires node pool management and capacity planning; GKE Enterprise (formerly Anthos) adds cost</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud Run</code></td>
+          <td>Fully managed serverless containers; scale-to-zero; supports HTTP, gRPC, WebSockets, and Cloud Run Jobs for batch</td>
+          <td>Stateless HTTP APIs, event-driven microservices, CI/CD sidecars; cheapest path for containerized workloads with variable traffic</td>
+          <td>Request timeout max 3600 seconds (1 hour); stateless (ephemeral filesystem); CPU throttled to zero when idle (unless min-instances set); max 32 GB RAM / 8 vCPU per instance</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud Run Jobs</code></td>
+          <td>Run containerized batch tasks to completion; supports parallelism with task indices</td>
+          <td>ETL, data processing, report generation that don't fit the HTTP request model</td>
+          <td>Task timeout max 168 hours; not suitable for long-lived services that need persistent connections</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud Functions (2nd gen)</code></td>
+          <td>Event-driven FaaS; triggers from Pub/Sub, Cloud Storage, Firestore, HTTP, Eventarc; powered by Cloud Run under the hood</td>
+          <td>Lightweight event handlers, webhooks, glue code between services</td>
+          <td>Max execution time 60 minutes (2nd gen); max memory 32 GB; cold starts can add latency; vendor lock-in on trigger APIs</td>
+        </tr>
+        <tr>
+          <td><code class="svc">App Engine Standard</code></td>
+          <td>PaaS for web apps; auto-scales to zero; language runtimes are sandboxed (Python, Java, Go, PHP, Node.js, Ruby)</td>
+          <td>Simple web apps, rapid deployment without container knowledge, automatic scaling from zero</td>
+          <td>Sandbox restricts OS access, arbitrary binaries, and some system calls; limited runtime versions; cannot run arbitrary native code; max request timeout 10 minutes; no VPC-native networking without Serverless VPC Access</td>
+        </tr>
+        <tr>
+          <td><code class="svc">App Engine Flexible</code></td>
+          <td>PaaS on GCE VMs; custom Docker containers; supports any language; no sandbox restrictions</td>
+          <td>Apps needing native libraries, custom runtimes, or SSH access during debugging</td>
+          <td>Minimum one VM always running (no scale-to-zero); slower cold starts; more expensive than Standard; deprecated features in some older runtimes</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Eventarc</code></td>
+          <td>Managed event routing from 130+ GCP and custom event sources to Cloud Run, Cloud Functions, and GKE using CloudEvents spec</td>
+          <td>Decoupled event-driven architectures without custom Pub/Sub plumbing</td>
+          <td>Targets limited to Cloud Run, Cloud Workflows, and GKE (Autopilot); some source-to-target combinations have latency SLAs, not real-time</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Workflows</code></td>
+          <td>Serverless orchestration of GCP APIs and HTTP endpoints using a YAML/JSON DSL; built-in retries, conditionals, parallel steps</td>
+          <td>Multi-step automation, API chaining, saga patterns, replacing home-grown orchestrators</td>
+          <td>Not a general-purpose language; complex branching logic can be awkward; max 32 KB payload per step; no native human-approval steps</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">Storage</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>What it provides</th>
+          <th>Why / when to choose it</th>
+          <th>Key limitation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code class="svc">Cloud Storage</code></td>
+          <td>Globally consistent object store; storage classes: Standard, Nearline (30-day min), Coldline (90-day min), Archive (365-day min); lifecycle rules, versioning, signed URLs, HMAC keys</td>
+          <td>Unstructured data, backups, data lake, static website hosting, media, ML datasets</td>
+          <td>Not a filesystem; eventual consistency for object listing after large deletes; early deletion fees for Nearline/Coldline/Archive; no append-in-place (must rewrite or compose)</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Persistent Disk (PD)</code></td>
+          <td>Durable block storage for GCE and GKE; Standard (HDD), Balanced (SSD), SSD (PD-SSD), Extreme (PD-Extreme); multi-reader mode available</td>
+          <td>Boot disks, database volumes, shared read-only datasets across VMs</td>
+          <td>Max size 64 TB per PD-SSD/Balanced, 257 TB for Extreme; single-writer attach (except multi-reader); IOPS/throughput scales with disk size, not just instance size</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Hyperdisk</code></td>
+          <td>Next-gen block storage with independently configurable capacity, IOPS, and throughput; Hyperdisk Balanced, Extreme, ML, Throughput</td>
+          <td>High-performance databases, analytics, ML training requiring predictable extreme IOPS</td>
+          <td>Not compatible with all VM machine types; more expensive than PD; provisioned IOPS cost even if unused</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Filestore</code></td>
+          <td>Managed NFS file shares; Basic (HDD/SSD), Enterprise, Zonal, Regional tiers</td>
+          <td>Lift-and-shift NFS workloads, shared file access for GKE (ReadWriteMany), CMS media storage</td>
+          <td>NFS only (no SMB/CIFS natively); Basic tier is zonal (no HA); Enterprise is expensive; no built-in encryption key management beyond CMEK</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Storage Transfer Service</code></td>
+          <td>Managed data transfer from AWS S3, Azure Blob, on-premises, and between GCS buckets; scheduling and filtering</td>
+          <td>One-time or recurring migrations, cross-cloud data replication</td>
+          <td>Not real-time replication; large initial transfers can take hours/days; on-premises transfers require agent installation</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">Databases</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>What it provides</th>
+          <th>Why / when to choose it</th>
+          <th>Key limitation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code class="svc">Cloud SQL</code></td>
+          <td>Managed MySQL, PostgreSQL, and SQL Server; automatic failover, read replicas, point-in-time recovery, IAM auth</td>
+          <td>OLTP relational workloads that don't need horizontal write scaling; modernize on-premises RDBMS</td>
+          <td>No horizontal write scaling (single primary only); max storage 64 TB per instance; cannot decrease storage size without recreating instance; max 96 vCPU / 624 GB RAM</td>
+        </tr>
+        <tr>
+          <td><code class="svc">AlloyDB for PostgreSQL</code></td>
+          <td>PostgreSQL-compatible; columnar engine for analytics queries; up to 4x faster OLTP than Cloud SQL; auto-managed storage; AI/ML embedding functions built-in</td>
+          <td>High-performance PostgreSQL OLTP with analytical mixed workloads; vector search for AI apps</td>
+          <td>PostgreSQL only (no MySQL/SQL Server); minimum instance 2 vCPU / 16 GB RAM; ~39% premium over Cloud SQL Enterprise; VPC Peering connectivity (non-transitive)</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud Spanner</code></td>
+          <td>Globally distributed, strongly consistent, horizontally scalable relational database; SQL and mutations API; TrueTime for external consistency</td>
+          <td>Global OLTP requiring horizontal write scaling, strong consistency, and 99.999% SLA; gaming, finance, global inventory</td>
+          <td>Significantly more expensive than Cloud SQL (~$65/month minimum at 100 PUs; ~$900/month per node); requires schema design for hotspot avoidance; no PostgreSQL wire protocol (uses proprietary API unless using PGAdapter); small instances (&lt;1000 PU) have non-linear scaling</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud Firestore</code></td>
+          <td>Serverless, fully managed document NoSQL database; real-time sync for mobile/web SDKs; offline support; ACID transactions per document; Native and Datastore modes</td>
+          <td>Mobile/web backends, real-time collaboration, hierarchical data, user profiles, game state</td>
+          <td>Range filters must all be on the same field (one inequality per query); no native full-text search; document size capped at 1 MiB; write rate limit ~1 write/sec per document; composite indexes must be pre-defined; queries always index-backed</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud Bigtable</code></td>
+          <td>Managed wide-column NoSQL at petabyte scale; HBase API compatible; consistent single-digit ms latency; ideal for time-series and IoT</td>
+          <td>Time-series, IoT telemetry, AdTech click streams, financial market data — all high-volume, low-latency key-value at massive scale</td>
+          <td>No SQL, no joins, no multi-row transactions, no secondary indexes; minimum one node per cluster (~$470/month at SSD pricing); schema design is critical — row key hotspots degrade performance; no ad-hoc queries</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Memorystore for Redis</code></td>
+          <td>Managed Redis 6/7; Standard tier (HA with replica); Basic tier (no HA); Memorystore for Redis Cluster for horizontal scale</td>
+          <td>Session caching, leaderboards, pub/sub fan-out, rate limiting, real-time analytics</td>
+          <td>Data is in-memory; max 300 GB per standalone instance (1 TB quota per region); Basic tier has no HA; persistence options (RDB/AOF) add latency; data lost on instance failure without persistence</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Memorystore for Memcached</code></td>
+          <td>Managed Memcached clusters; multi-node sharding; AUTO_DISCOVERY for client-side node discovery</td>
+          <td>Simple read caching for apps already using Memcached; stateless cache that doesn't need persistence or pub/sub</td>
+          <td>No persistence; no pub/sub; no data structures beyond key-value; not suitable for session storage requiring durability</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Database Migration Service (DMS)</code></td>
+          <td>Minimal-downtime migrations to Cloud SQL and AlloyDB using CDC (change data capture); supports MySQL, PostgreSQL, SQL Server, Oracle</td>
+          <td>Lift-and-shift database migrations with minimal production downtime</td>
+          <td>Requires network connectivity from source to Google; some DDL changes require migration restart; Oracle migrations require additional licensing and tooling</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">Data &amp; Analytics</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>What it provides</th>
+          <th>Why / when to choose it</th>
+          <th>Key limitation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code class="svc">BigQuery</code></td>
+          <td>Serverless, columnar data warehouse; petabyte-scale SQL analytics; built-in ML (BigQuery ML); BI Engine for in-memory acceleration; federated queries to GCS, Bigtable, Spanner; real-time ingestion via streaming inserts</td>
+          <td>OLAP, business intelligence, ad-hoc analytics, data science, log analysis; best choice when data exceeds what fits in a relational DB and query latency of seconds is acceptable</td>
+          <td>Not for low-latency OLTP (DML is expensive, not transactional in the RDBMS sense); streaming inserts cost more than batch load; queries billed per bytes scanned (use table partitioning and clustering to control costs); slot-based reservations for predictable pricing require up-front commitment</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Dataflow</code></td>
+          <td>Managed Apache Beam service for batch and streaming ETL/ELT pipelines; auto-scaling workers; exactly-once processing semantics</td>
+          <td>Real-time stream processing, ETL from Pub/Sub to BigQuery/GCS, complex windowing and joins; when you need exactly-once guarantees</td>
+          <td>Beam SDK learning curve; job startup latency (1–3 min) makes it poor for sub-second latency; per-vCPU-hour pricing; Flex Templates required for custom environments</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Pub/Sub</code></td>
+          <td>Fully managed, globally distributed message queue and streaming service; at-least-once delivery; up to 7-day message retention; push and pull subscriptions; Pub/Sub Lite for cost-optimized zonal delivery</td>
+          <td>Event ingestion, fan-out, decoupling microservices, Dataflow source/sink, IoT data pipelines</td>
+          <td>At-least-once (not exactly-once); ordering guaranteed only within a message ordering key; Pub/Sub Lite is zonal (not global) and has lower SLA; no dead-letter queue natively without explicit configuration</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Dataproc</code></td>
+          <td>Managed Hadoop, Spark, Hive, Presto clusters; on-demand cluster creation; GCS as HDFS replacement; Dataproc Serverless for Spark without cluster management</td>
+          <td>Migrating existing Hadoop/Spark workloads, Spark ML, Hive queries, batch ETL on existing ecosystems</td>
+          <td>Cluster management still required for non-serverless; cluster startup takes 60–90 seconds; cost scales with cluster size even when idle; not ideal for net-new pipelines where Dataflow is more managed</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Looker / Looker Studio</code></td>
+          <td>Looker: enterprise BI platform with LookML semantic model, governed metrics; Looker Studio (free): drag-and-drop dashboards connected to BigQuery, Sheets, etc.</td>
+          <td>Self-service BI, consistent metric definitions across teams, embedded analytics in applications</td>
+          <td>Looker (full) is enterprise-priced and complex to model; Looker Studio lacks governance and row-level security at scale; both require BigQuery or other connector costs</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Dataplex</code></td>
+          <td>Intelligent data fabric for data governance, metadata management, data quality, and data lineage across GCS, BigQuery, and Dataproc</td>
+          <td>Enterprise data mesh, unified discovery of data assets, automated data quality checks, policy tagging</td>
+          <td>Relatively new; some features (lineage, quality) have limited depth versus dedicated tools; adds complexity for small teams; cost scales with data scanned for discovery</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Data Catalog</code></td>
+          <td>Managed metadata service and data discovery; tag templates, search across BigQuery, GCS, Pub/Sub, Bigtable; now integrated into Dataplex</td>
+          <td>Discoverability, classification, and tagging of data assets for governance and compliance</td>
+          <td>Not a data store; search is metadata only; tagging policy enforcement requires additional IAM and DLP integration</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud Data Fusion</code></td>
+          <td>Managed CDAP-based ETL/ELT platform with a visual pipeline builder; 150+ connectors; runs on Dataproc</td>
+          <td>Business-analyst-friendly ETL, migrating on-premises SSIS/Informatica pipelines to GCP</td>
+          <td>Expensive compared to writing Dataflow directly; underlying Dataproc clusters add cold-start latency; not suitable for real-time sub-second pipelines</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">Networking</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>What it provides</th>
+          <th>Why / when to choose it</th>
+          <th>Key limitation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code class="svc">Virtual Private Cloud (VPC)</code></td>
+          <td>Global, software-defined network; subnets are regional; auto or custom mode; firewall rules, routes, flow logs; shared VPC for cross-project networking</td>
+          <td>Foundation for all GCP workloads; shared VPC for centralized network control in multi-project organizations</td>
+          <td>VPC Peering is non-transitive (A-B and B-C peering does NOT give A-C connectivity; use Shared VPC or NCC instead); max 7000 routes per VPC; dynamic routing requires Cloud Router</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud Load Balancing</code></td>
+          <td>Fully managed, globally distributed load balancing; External HTTP(S) LB (global Anycast), Internal HTTP(S) LB, Network LB (TCP/UDP), Internal TCP/UDP LB; Cloud CDN integration; SSL offload</td>
+          <td>Scale web traffic globally, HA with health checks, SSL termination, URL-based routing</td>
+          <td>Premium Network Tier required for global external LB; Standard tier routes traffic regionally; Backend services must be in same region for internal LB; connection draining default 300 sec</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud CDN</code></td>
+          <td>Anycast CDN built on Google's edge PoPs; cache GCS objects and backend responses; signed URLs; cache invalidation</td>
+          <td>Static asset delivery, video streaming, API response caching, reducing origin latency globally</td>
+          <td>Only works with external HTTP(S) LB backends; cache invalidation can take time to propagate; large objects (&gt;10 GB) require chunked transfer; HTTPS required for caching to work correctly</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud DNS</code></td>
+          <td>Managed authoritative DNS; private zones for internal GCP resolution; public zones; DNS policies; DNSSEC; forwarding zones for hybrid environments</td>
+          <td>Hosting public DNS, internal service discovery, hybrid on-premises-to-GCP DNS resolution</td>
+          <td>Not a global load balancer; DNS TTLs can delay propagation; DNSSEC requires zone signing setup; forwarding zones require connectivity to on-premises resolvers</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud VPN (HA VPN)</code></td>
+          <td>IPsec VPN over the internet; HA VPN provides 99.99% SLA with two redundant tunnels; BGP routing via Cloud Router</td>
+          <td>Connecting on-premises networks to GCP when Interconnect is not justified by cost or timeline</td>
+          <td>Max ~3 Gbps throughput per HA VPN tunnel (limited by packet rate); internet path adds latency and jitter; not suitable for consistent high-bandwidth requirements; no SLA without BGP and HA topology</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud Interconnect</code></td>
+          <td>Dedicated Interconnect: 10 or 100 Gbps private circuits from colocation facility to Google; Partner Interconnect: through service providers from 50 Mbps to 50 Gbps</td>
+          <td>High-bandwidth, low-latency, consistent hybrid connectivity; large data transfer volumes where egress costs make VPN impractical</td>
+          <td>Traffic is NOT encrypted by default (private circuit, not IPsec); must add HA VPN over Interconnect for encryption; Dedicated requires colocation presence; Partner has dependency on provider SLA; provisioning takes weeks</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Network Connectivity Center (NCC)</code></td>
+          <td>Hub-and-spoke network topology for connecting VPCs, on-premises, and other clouds via a central hub; enables transitive routing between spokes</td>
+          <td>Replace complex VPC Peering full-mesh with scalable hub-and-spoke; multi-cloud and hybrid connectivity at enterprise scale</td>
+          <td>Data transfer fees between spokes; some spoke types (e.g., VLAN attachments) have limited inter-spoke routing; relatively new service with evolving feature set</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud Armor</code></td>
+          <td>DDoS protection and WAF integrated with Cloud Load Balancing; pre-configured WAF rules (OWASP Top 10), rate limiting, adaptive protection, geo-based IP allow/deny</td>
+          <td>Protect web apps from DDoS, SQLi, XSS, layer 7 attacks; bot management</td>
+          <td>Only works with external HTTP(S) LB and TCP proxy LB; advanced tiers (Managed Protection Plus) are expensive; rules are evaluated in priority order and can be complex to manage at scale</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Private Service Connect</code></td>
+          <td>Private endpoint in your VPC for consuming managed GCP services (BigQuery, GCS, etc.) or third-party services without public internet traversal</td>
+          <td>Compliance requirements to keep traffic off the internet; connecting to published services (e.g., AlloyDB, Cloud SQL) from peered VPCs</td>
+          <td>Not all GCP services support PSC endpoints yet; consumer and producer must configure endpoints separately; no transitive connectivity</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">Security &amp; IAM</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>What it provides</th>
+          <th>Why / when to choose it</th>
+          <th>Key limitation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code class="svc">Cloud IAM</code></td>
+          <td>Identity and Access Management; principals (users, service accounts, groups, workload identity), roles (basic, predefined, custom), conditions, deny policies, IAM Recommender</td>
+          <td>All GCP access control; prefer predefined roles over basic; use Workload Identity for GKE pods instead of service account keys</td>
+          <td>Max 1500 custom roles per project/org; IAM conditions have limited expression capabilities; IAM changes can take up to 60 seconds to propagate; service account key management is a security anti-pattern</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud KMS</code></td>
+          <td>Managed key management; software-backed (Cloud KMS) and hardware-backed (Cloud HSM) key versions; CMEK for encrypting GCP service data; key rotation, versioning, import</td>
+          <td>Customer-managed encryption keys (CMEK) for compliance; key rotation policies; audit trails of key use</td>
+          <td>Keys are regional (choose region wisely for latency and compliance); Cloud HSM has higher cost and limited regional availability; key destruction is irreversible after 24-hour scheduled deletion window</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Secret Manager</code></td>
+          <td>Managed secrets store for API keys, passwords, certificates; versioned; automatic replication; IAM-gated access; audit logs; TTL and rotation integration</td>
+          <td>Storing database credentials, API keys, TLS certificates securely; replaces environment variable secrets</td>
+          <td>Max 10,000 secrets per project; secret versions are immutable; rotation must be triggered externally (no native automatic rotation beyond Pub/Sub notification triggers)</td>
+        </tr>
+        <tr>
+          <td><code class="svc">VPC Service Controls</code></td>
+          <td>Security perimeters around GCP services to prevent data exfiltration; restricts which VPCs/identities can call specific APIs regardless of IAM</td>
+          <td>Data exfiltration prevention for regulated data (PII, PHI, financial); layered defense beyond IAM</td>
+          <td>Complex to configure and test; "dry run" mode required before enforcement to avoid breaking legitimate access; not all GCP services support VPC-SC perimeters; access context policies can be confusing</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Security Command Center (SCC)</code></td>
+          <td>Centralized security and risk management platform; vulnerability findings, misconfiguration detection, threat detection (Event Threat Detection), compliance dashboards (CIS, PCI, HIPAA)</td>
+          <td>Org-wide security posture management, vulnerability scanning, SIEM integration</td>
+          <td>Premium tier required for threat detection and compliance reporting (significant cost); findings are not real-time for all detectors; requires org-level activation</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Identity-Aware Proxy (IAP)</code></td>
+          <td>Zero-trust access gateway for web apps and VMs; verifies user identity and context before allowing access; replaces VPN for internal tools</td>
+          <td>BeyondCorp-style access to internal apps without a VPN; securing internal web UIs</td>
+          <td>Only supports HTTP/HTTPS; does not replace VPN for all protocols; requires IAP-aware app or IAP connector; context-aware access requires additional Chrome Enterprise or Endpoint Verification</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Binary Authorization</code></td>
+          <td>Deploy-time policy enforcement for container images; attestors sign images after security checks; enforced on GKE, Cloud Run, and GCF</td>
+          <td>Supply chain security, ensuring only verified images run in production</td>
+          <td>Attestation pipeline adds CI/CD complexity; emergencies require break-glass procedures; does not scan for runtime vulnerabilities</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud Audit Logs</code></td>
+          <td>Immutable audit trail of who did what, where, and when; Admin Activity (always on), Data Access (opt-in), System Event, Policy Denied logs per service</td>
+          <td>Compliance, forensics, incident investigation; required for SOC 2, PCI, HIPAA</td>
+          <td>Data Access logs can generate very high volume and cost; must explicitly enable for each service; default retention 400 days for Admin Activity, 30 days for Data Access; exports to Cloud Storage/BigQuery for long-term retention</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">AI / ML / Generative AI</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>What it provides</th>
+          <th>Why / when to choose it</th>
+          <th>Key limitation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code class="svc">Vertex AI (Gemini Enterprise Agent Platform)</code></td>
+          <td>End-to-end MLOps platform: Model Garden (200+ foundation models including Gemini), Workbench (managed notebooks), Pipelines (Kubeflow), Feature Store, Model Registry, Prediction endpoints, Vector Search, AutoML, Agent Builder</td>
+          <td>Enterprise ML training, fine-tuning, serving; RAG applications; agent orchestration; all ML workloads requiring MLOps governance</td>
+          <td>Complex platform with steep learning curve; prediction endpoints have cold start latency; online prediction costs more than batch; Gemini API quotas can throttle high-traffic apps; feature store has ingestion latency</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Gemini Models (API)</code></td>
+          <td>Gemini 2.0 / 2.5 family: Flash (fast, cheap), Pro (balanced), Ultra (most capable); multimodal (text, image, audio, video, code); long context windows (up to 1M tokens)</td>
+          <td>Generative AI applications, RAG, summarization, code generation, multimodal analysis</td>
+          <td>Token limits and rate limits per project; model responses are non-deterministic; data residency constraints on which regions serve requests; cost scales with token volume</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Vertex AI Search</code></td>
+          <td>Managed RAG and enterprise search over structured and unstructured data (GCS, BigQuery, websites); grounding for Gemini responses; pre-built UI components</td>
+          <td>Grounded GenAI apps that need to retrieve enterprise data before generating responses</td>
+          <td>Indexing latency (not real-time); limited control over embedding models vs. custom RAG; data connector support varies by source type</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Vertex AI Agent Builder</code></td>
+          <td>Low-code platform to build, deploy, and manage conversational AI agents backed by Gemini; integrates with Vertex AI Search for grounding</td>
+          <td>Customer-facing chatbots, virtual agents, internal Q&amp;A bots backed by enterprise knowledge bases</td>
+          <td>Limited customization vs. building agents directly with Gemini API; latency can be higher than direct API calls; limited support for complex multi-turn stateful flows</td>
+        </tr>
+        <tr>
+          <td><code class="svc">AutoML</code></td>
+          <td>No-code/low-code ML training for tabular, image, video, text, and translation tasks; integrated into Vertex AI</td>
+          <td>Teams without ML expertise needing custom models; rapid prototyping; small-to-medium datasets</td>
+          <td>Limited model customization vs. custom training; may underperform bespoke architectures on complex tasks; training time and cost can be significant for large datasets</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud Natural Language API</code></td>
+          <td>Pre-trained NLP: sentiment analysis, entity recognition, entity sentiment, syntax analysis, content classification</td>
+          <td>Quick NLP features without training a custom model; content moderation, social media analysis</td>
+          <td>Pre-trained only; limited to supported languages; cannot fine-tune; Gemini API now covers most use cases with better accuracy</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud Vision API</code></td>
+          <td>Pre-trained image analysis: label detection, OCR, face detection, object localization, safe search, logo detection</td>
+          <td>Quick image analysis, document OCR, content moderation at scale without custom training</td>
+          <td>Pre-trained models may not match domain-specific accuracy; limited fine-tuning; Gemini multimodal covers many overlapping use cases</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Document AI</code></td>
+          <td>Managed document processing: OCR, form parsing, invoice processing, contract analysis; pre-trained parsers and custom document processors</td>
+          <td>Automating document ingestion for invoices, receipts, tax forms, contracts, medical records</td>
+          <td>Accuracy varies by document quality and type; custom processors require labeled training data; per-page pricing adds up at scale</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">Operations &amp; Observability</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>What it provides</th>
+          <th>Why / when to choose it</th>
+          <th>Key limitation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code class="svc">Cloud Monitoring</code></td>
+          <td>Metrics collection, dashboards, alerting, uptime checks; workspace-based multi-project view; 1500+ built-in metrics; custom metrics via OpenTelemetry or Monitoring API</td>
+          <td>GCP-native monitoring for all services; SLO/SLI tracking; alert policies with notification channels</td>
+          <td>Default metric retention 6 weeks; custom metrics have per-metric costs; alerting has a maximum of 500 alert policies per project; advanced alerting (Monitoring Query Language) has a learning curve</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud Logging</code></td>
+          <td>Centralized log management; _Default and _Required log buckets; log-based metrics; log sinks to GCS, BigQuery, Pub/Sub; log analytics (SQL over logs)</td>
+          <td>Centralized log aggregation, compliance log retention, creating metrics from logs, debugging distributed systems</td>
+          <td>Default retention 30 days (_Default bucket); log exclusion filters needed to control cost; high-volume workloads can generate significant ingestion costs; search is not full-text by default</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud Trace</code></td>
+          <td>Distributed tracing; automatic instrumentation for Cloud Run, GKE; OpenTelemetry compatible; latency analysis, trace comparison</td>
+          <td>Identifying latency bottlenecks in distributed microservices</td>
+          <td>Sampling rates must be tuned to balance cost and coverage; trace data retention is 30 days; limited built-in anomaly detection vs. third-party APM tools</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud Profiler</code></td>
+          <td>Continuous CPU and heap profiling of production workloads with minimal overhead; flame graphs; supports Java, Go, Python, Node.js</td>
+          <td>Performance optimization of long-running services; finding memory leaks and CPU hotspots in production</td>
+          <td>Agent must be instrumented in application code; not all runtimes supported equally; profiling data is statistical (sampling), not deterministic</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Error Reporting</code></td>
+          <td>Aggregates and deduplicates application errors from Cloud Logging; groups similar errors, shows frequency, alerts on new error classes</td>
+          <td>Rapid detection of new production errors; prioritization by error frequency and impact</td>
+          <td>Requires structured error format in logs; limited root cause analysis vs. full APM; free tier is basic; does not trace errors across service boundaries</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">DevOps &amp; IaC</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>What it provides</th>
+          <th>Why / when to choose it</th>
+          <th>Key limitation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code class="svc">Cloud Build</code></td>
+          <td>Managed CI/CD build service; triggers from Cloud Source Repositories, GitHub, Bitbucket; Docker and custom build steps; integration with Artifact Registry and GKE</td>
+          <td>GCP-native CI pipelines, container builds, automated test execution, deploy pipelines</td>
+          <td>Max 24-hour build timeout; concurrent build limits per project; no native build queuing priority; limited compared to full CI platforms (Jenkins, GitHub Actions) for complex workflows</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud Deploy</code></td>
+          <td>Managed, opinionated continuous delivery for GKE, Cloud Run, and GCE; delivery pipelines with stages, approvals, rollback, canary/blue-green strategies</td>
+          <td>Progressive delivery with automated rollouts and rollback; GCP-native CD with audit trails for compliance</td>
+          <td>Targets limited to GKE, Cloud Run, and GCE (no other runtimes); opinionated pipeline structure may not fit all deployment patterns; requires Skaffold configuration</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Artifact Registry</code></td>
+          <td>Managed artifact repository for Docker images, Maven, npm, Python, Go, APT, YUM; regional; integrated with Cloud Build and GKE; vulnerability scanning</td>
+          <td>Storing build artifacts, container images, private npm/Maven packages within GCP</td>
+          <td>Regional (no built-in global replication without manual config); storage costs scale with artifact size and retention; replaces Container Registry (deprecated)</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud Source Repositories</code></td>
+          <td>Managed Git repositories hosted on GCP; integration with Cloud Build triggers; free for small teams</td>
+          <td>Keeping source code within GCP for compliance; simple repos without need for GitHub/GitLab features</td>
+          <td>Lacks GitHub/GitLab features (pull request review UI, Actions ecosystem, integrations); mostly used as a mirror; most teams prefer GitHub/GitLab with Cloud Build triggers</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Terraform (on GCP)</code></td>
+          <td>Open-source IaC; Google provider manages all GCP resources; Cloud Foundation Toolkit provides opinionated Terraform modules; now an explicit PCA exam requirement</td>
+          <td>Infrastructure-as-code for reproducible, version-controlled GCP environments; required for enterprise governance</td>
+          <td>State management requires GCS backend; Terraform Cloud or self-managed state locking needed for teams; provider updates can introduce breaking changes; not a GCP-managed service</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Config Connector</code></td>
+          <td>Kubernetes operator that manages GCP resources (Cloud SQL, Pub/Sub, IAM) as Kubernetes CRDs; enables GitOps for GCP infrastructure via GKE</td>
+          <td>Teams running GKE who want to manage GCP resources using kubectl and GitOps workflows</td>
+          <td>Requires GKE; CRD lifecycle management adds complexity; not all GCP resources are supported; slower than Terraform for large resource graphs</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">Migration &amp; Hybrid</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>What it provides</th>
+          <th>Why / when to choose it</th>
+          <th>Key limitation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code class="svc">Migrate to Virtual Machines</code></td>
+          <td>Lift-and-shift VMs from VMware, AWS, or Azure to GCE; test clones without disrupting production; streaming migration (low downtime)</td>
+          <td>Fast migration of existing VM workloads to GCP without re-platforming</td>
+          <td>Migrated VMs are still VMs (no modernization); Windows licensing costs carry over; requires network connectivity from source; not suitable for containerizing workloads</td>
+        </tr>
+        <tr>
+          <td><code class="svc">GKE Enterprise (Anthos)</code></td>
+          <td>Multi-cloud and hybrid Kubernetes management; GKE clusters on-premises (bare metal/VMware), on AWS/Azure; Config Management, Service Mesh (Istio), Policy Controller, Fleet management</td>
+          <td>Running Kubernetes consistently across on-premises and multi-cloud; centralized policy and service mesh management</td>
+          <td>Complex and expensive; requires GKE Enterprise license; on-premises clusters need significant infrastructure; managing fleet of clusters adds operational overhead</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Transfer Appliance</code></td>
+          <td>Physical hardware appliance shipped to customer site to ingest up to 1 PB of data per appliance for offline transfer to GCS</td>
+          <td>Large-scale data migrations where network bandwidth is insufficient or too costly; &gt;20 TB datasets</td>
+          <td>Long round-trip time (shipping + ingestion); limited to GCS as destination; requires careful data preparation and encryption; not for ongoing replication</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud Interconnect (hybrid)</code></td>
+          <td>See Networking section — dedicated private connectivity between on-premises and GCP</td>
+          <td>High-bandwidth, consistent hybrid workloads; DR replication; SAP/Oracle data transfer</td>
+          <td>Not encrypted by default; requires colocation or partner provider; weeks to provision</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">Management &amp; Governance</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Service</th>
+          <th>What it provides</th>
+          <th>Why / when to choose it</th>
+          <th>Key limitation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code class="svc">Resource Manager</code></td>
+          <td>Hierarchical organization of GCP resources: Organization &gt; Folders &gt; Projects; IAM and policy inheritance; labels; project lifecycle management</td>
+          <td>Structuring multi-team, multi-environment GCP estates; applying org-wide policies; billing separation</td>
+          <td>Folder depth limit (10 levels); moving projects between folders may briefly disrupt billing; org policy constraints must be tested before enforcement</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Organization Policy Service</code></td>
+          <td>Centralized policy constraints on GCP resource configuration (e.g., restrict regions, disable public IPs, require Shielded VMs, enforce CMEK)</td>
+          <td>Preventive guardrails for compliance and security; stopping misconfigurations before they happen</td>
+          <td>Policies inherited down the hierarchy cannot be selectively overridden at lower levels without exceptions; some constraints only apply to new resources, not existing; complex constraint conditions require Common Expression Language</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud Billing</code></td>
+          <td>Billing account management, budget alerts, cost exports to BigQuery, committed use discounts (CUDs), sustained use discounts (SUDs); billing subaccounts for resellers</td>
+          <td>Cost management, chargebacks, budget enforcement, identifying cost anomalies</td>
+          <td>Budgets are alerts only (no automatic resource shutdown unless combined with Cloud Functions); CUD commitments are 1 or 3 years; detailed billing data available only via BigQuery export (not real-time)</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud Asset Inventory</code></td>
+          <td>Real-time inventory of all GCP resources and IAM policies; export to BigQuery or GCS; change history; policy analysis</td>
+          <td>Compliance audits, understanding resource sprawl, detecting IAM policy changes across an org</td>
+          <td>Export and analysis may have slight delay; complex queries require BigQuery knowledge; not a real-time alerting system (use SCC or Audit Logs for that)</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Apigee API Management</code></td>
+          <td>Enterprise API gateway and management platform; API proxies, rate limiting, monetization, developer portal, analytics; supports REST, SOAP, gRPC</td>
+          <td>Publishing and managing APIs at scale; API monetization; partner ecosystem; enterprise API governance</td>
+          <td>Expensive (enterprise pricing); complex to configure for simple use cases; Cloud Endpoints is simpler for GCP-internal API management; requires separate operational expertise</td>
+        </tr>
+        <tr>
+          <td><code class="svc">Cloud Endpoints</code></td>
+          <td>Lightweight API management using Envoy proxy; OpenAPI and gRPC support; authentication, monitoring, logging; deployed on Cloud Run, GKE, or GCE</td>
+          <td>Adding auth, monitoring, and quotas to APIs without the cost/complexity of Apigee</td>
+          <td>Less featured than Apigee (no monetization, limited developer portal, basic analytics); configuration is code-based and requires redeploy for changes</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <b>How to use limitations to eliminate wrong exam answers:</b> The PCA exam frequently presents scenarios where multiple services could theoretically work but one has a disqualifying limitation. Apply this elimination process: (1) <b>Scale</b> — if the question involves horizontal write scaling, Cloud SQL is wrong; choose Spanner. (2) <b>Latency</b> — if the question requires sub-millisecond or consistent low-latency key lookup at massive scale, BigQuery is wrong; choose Bigtable or Memorystore. (3) <b>Cost floor</b> — if the scenario is a startup with minimal budget, Bigtable (min ~$470/month) and Spanner (min ~$65–900/month) may be over-engineered; Cloud SQL or Firestore may be correct. (4) <b>Connectivity</b> — if a question asks about connecting three or more VPCs transitively, VPC Peering is wrong; choose Shared VPC or NCC. (5) <b>Encryption in transit</b> — if the question requires encrypted hybrid connectivity, Cloud Interconnect alone is wrong (add HA VPN over Interconnect). (6) <b>Serverless runtime</b> — if the app needs OS-level access or persistent filesystem, Cloud Run and App Engine Standard are wrong; choose GKE or GCE. (7) <b>OLTP vs OLAP</b> — BigQuery is never correct for low-latency transactional workloads; choose Cloud SQL, AlloyDB, or Spanner. (8) <b>Query patterns</b> — Firestore cannot do multi-field inequality queries or full-text search; Bigtable cannot do joins or secondary indexes.
+  </div>
+
+</section>
+
+    <section class="page" id="compare">
+  <div class="eyebrow">Reference - Cloud Equivalents</div>
+  <h1 class="pt">GCP vs AWS vs Azure</h1>
+  <p class="lede">Service-to-service mapping across the three major clouds. Use this to quickly orient if you come from an AWS or Azure background, and to understand where GCP has genuine differentiators versus parity services.</p>
+  <div class="accent-bar" style="background:#b45309"></div>
+
+  <h2 class="sec">Compute</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Google Cloud</th>
+          <th>AWS</th>
+          <th>Azure</th>
+          <th>Notes / key difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Virtual Machines</td>
+          <td><code class="svc">Compute Engine</code></td>
+          <td>EC2</td>
+          <td>Azure Virtual Machines</td>
+          <td>GCP offers custom machine types (any vCPU/RAM combination); AWS has largest instance variety; Azure tight integration with Windows Server and Active Directory</td>
+        </tr>
+        <tr>
+          <td>VM Autoscaling</td>
+          <td><code class="svc">Managed Instance Groups (MIG)</code></td>
+          <td>Auto Scaling Groups (ASG)</td>
+          <td>Virtual Machine Scale Sets (VMSS)</td>
+          <td>GCP MIGs support rolling updates and auto-healing natively; AWS ASG integrates tightly with ALB target groups; Azure VMSS supports flexible and uniform orchestration modes</td>
+        </tr>
+        <tr>
+          <td>Spot / Preemptible VMs</td>
+          <td><code class="svc">Spot VMs / Preemptible VMs</code></td>
+          <td>Spot Instances</td>
+          <td>Azure Spot VMs</td>
+          <td>GCP Spot VMs have no 2-minute notice (just 30 seconds); AWS Spot has 2-minute interruption notice and Spot Instance Advisor; Azure Spot supports eviction policies (deallocate or delete)</td>
+        </tr>
+        <tr>
+          <td>Dedicated hosts</td>
+          <td><code class="svc">Sole-Tenant Nodes</code></td>
+          <td>EC2 Dedicated Hosts</td>
+          <td>Azure Dedicated Hosts</td>
+          <td>All three offer physical isolation for licensing and compliance; AWS supports BYOL most broadly; GCP Sole-Tenant integrates with Committed Use Discounts</td>
+        </tr>
+        <tr>
+          <td>High-performance / bare metal</td>
+          <td><code class="svc">Bare Metal Solution</code></td>
+          <td>EC2 Bare Metal instances</td>
+          <td>Azure BareMetal Infrastructure</td>
+          <td>GCP Bare Metal is co-located in Google facilities connected via peering; AWS bare metal runs in standard AZs; Azure BareMetal targets SAP HANA specifically</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">Containers &amp; Kubernetes</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Google Cloud</th>
+          <th>AWS</th>
+          <th>Azure</th>
+          <th>Notes / key difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Managed Kubernetes</td>
+          <td><code class="svc">GKE</code> (Standard &amp; Autopilot)</td>
+          <td>EKS</td>
+          <td>AKS</td>
+          <td>GKE invented Kubernetes and has the most mature managed offering; GKE Autopilot fully manages nodes (pay per pod, not node); EKS is highly configurable with Fargate option; AKS is deeply integrated with Azure AD and free control plane</td>
+        </tr>
+        <tr>
+          <td>Serverless containers</td>
+          <td><code class="svc">Cloud Run</code></td>
+          <td>AWS Fargate (on ECS/EKS), App Runner</td>
+          <td>Azure Container Apps</td>
+          <td>Cloud Run scales to zero natively and is the simplest container serverless experience; Fargate requires ECS/EKS cluster setup; App Runner is simpler than Fargate but less flexible; Azure Container Apps supports KEDA-based event-driven scaling</td>
+        </tr>
+        <tr>
+          <td>Container registry</td>
+          <td><code class="svc">Artifact Registry</code></td>
+          <td>ECR (Elastic Container Registry)</td>
+          <td>Azure Container Registry (ACR)</td>
+          <td>GCP Artifact Registry also hosts Maven, npm, Python packages (not just Docker); ECR integrates tightly with ECS/EKS; ACR supports geo-replication in Premium tier</td>
+        </tr>
+        <tr>
+          <td>Multi-cloud / hybrid Kubernetes</td>
+          <td><code class="svc">GKE Enterprise (Anthos)</code></td>
+          <td>EKS Anywhere, EKS on Outposts</td>
+          <td>Azure Arc</td>
+          <td>GKE Enterprise (Anthos) is the most comprehensive multi-cloud K8s platform; Azure Arc supports any Kubernetes cluster (not just AKS); EKS Anywhere runs on-premises; Azure Arc also extends to servers and data services</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">Serverless Functions &amp; App Platforms</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Google Cloud</th>
+          <th>AWS</th>
+          <th>Azure</th>
+          <th>Notes / key difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Functions as a Service (FaaS)</td>
+          <td><code class="svc">Cloud Functions (2nd gen)</code></td>
+          <td>AWS Lambda</td>
+          <td>Azure Functions</td>
+          <td>GCF 2nd gen runs on Cloud Run (up to 60 min timeout, 32 GB RAM); Lambda has largest ecosystem of triggers and 15-min max; Azure Functions supports Durable Functions for stateful orchestration</td>
+        </tr>
+        <tr>
+          <td>PaaS (managed runtime)</td>
+          <td><code class="svc">App Engine</code></td>
+          <td>AWS Elastic Beanstalk</td>
+          <td>Azure App Service</td>
+          <td>App Engine Standard has strictest sandbox (no arbitrary binaries); Elastic Beanstalk is more configurable; Azure App Service integrates with Azure DevOps and has built-in deployment slots for blue/green</td>
+        </tr>
+        <tr>
+          <td>Workflow orchestration</td>
+          <td><code class="svc">Workflows</code></td>
+          <td>AWS Step Functions</td>
+          <td>Azure Logic Apps / Durable Functions</td>
+          <td>Google Workflows uses a YAML/JSON DSL; Step Functions uses ASL (JSON) and has more connector integrations; Logic Apps is low-code with 400+ connectors; Durable Functions is code-first in Azure Functions</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">Object, Block &amp; File Storage</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Google Cloud</th>
+          <th>AWS</th>
+          <th>Azure</th>
+          <th>Notes / key difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Object storage</td>
+          <td><code class="svc">Cloud Storage</code> (GCS)</td>
+          <td>S3</td>
+          <td>Azure Blob Storage</td>
+          <td>GCS has strong global consistency; S3 has the most mature ecosystem and most third-party integrations; Azure Blob has lifecycle tiers (Hot/Cool/Cold/Archive); all three have similar pricing but egress costs differ significantly</td>
+        </tr>
+        <tr>
+          <td>Block storage</td>
+          <td><code class="svc">Persistent Disk</code> / <code class="svc">Hyperdisk</code></td>
+          <td>EBS (gp3, io2)</td>
+          <td>Azure Managed Disks (Standard HDD/SSD, Premium SSD, Ultra Disk)</td>
+          <td>GCP Hyperdisk allows independently configuring IOPS and throughput from capacity; AWS EBS gp3 decouples IOPS from size; Azure Ultra Disk offers up to 160,000 IOPS per disk</td>
+        </tr>
+        <tr>
+          <td>Managed NFS / file storage</td>
+          <td><code class="svc">Filestore</code></td>
+          <td>EFS (NFS), FSx (Windows/Lustre/NetApp)</td>
+          <td>Azure Files (SMB/NFS)</td>
+          <td>Filestore is NFS only; AWS EFS is NFS with automatic scaling; FSx family offers Windows SMB and Lustre; Azure Files supports both SMB and NFS with Azure Active Directory auth</td>
+        </tr>
+        <tr>
+          <td>Offline bulk data transfer</td>
+          <td><code class="svc">Transfer Appliance</code></td>
+          <td>AWS Snowball / Snowmobile</td>
+          <td>Azure Data Box</td>
+          <td>AWS Snowball Edge has edge compute capability; Snowmobile handles exabyte scale (truck); GCP Transfer Appliance tops at ~1 PB; Azure Data Box available in several sizes up to 1 PB</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">Relational Databases</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Google Cloud</th>
+          <th>AWS</th>
+          <th>Azure</th>
+          <th>Notes / key difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Managed relational DB</td>
+          <td><code class="svc">Cloud SQL</code> (MySQL, PostgreSQL, SQL Server)</td>
+          <td>RDS (MySQL, PostgreSQL, SQL Server, Oracle, MariaDB)</td>
+          <td>Azure SQL Database / Azure Database for MySQL/PostgreSQL</td>
+          <td>GCP Cloud SQL max 64 TB; AWS RDS supports Oracle (GCP does not have managed Oracle); Azure SQL Database has serverless tier that pauses when idle; all support read replicas but no horizontal write scaling</td>
+        </tr>
+        <tr>
+          <td>High-performance PostgreSQL</td>
+          <td><code class="svc">AlloyDB for PostgreSQL</code></td>
+          <td>Aurora PostgreSQL</td>
+          <td>Azure Flexible Server (PostgreSQL) / Hyperscale Citus</td>
+          <td>AlloyDB is GCP's Aurora equivalent; both use disaggregated storage with read replicas; Aurora has broader ecosystem and longer track record; AlloyDB adds built-in ML/vector search functions; Citus (Azure) adds sharding for PostgreSQL</td>
+        </tr>
+        <tr>
+          <td>Globally distributed relational DB</td>
+          <td><code class="svc">Cloud Spanner</code></td>
+          <td>Aurora Global Database</td>
+          <td>Azure Cosmos DB for PostgreSQL (Citus) / Azure SQL Hyperscale</td>
+          <td>Spanner is the only service offering external consistency (TrueTime) with horizontal write scaling globally; Aurora Global has a primary region with read replicas globally (writes still single region); Cosmos DB for PostgreSQL uses Citus sharding but is not a traditional relational DB</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">NoSQL Databases</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Google Cloud</th>
+          <th>AWS</th>
+          <th>Azure</th>
+          <th>Notes / key difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Serverless document DB</td>
+          <td><code class="svc">Cloud Firestore</code></td>
+          <td>DynamoDB</td>
+          <td>Azure Cosmos DB (Core/SQL API)</td>
+          <td>Firestore has strong real-time sync SDKs for mobile/web; DynamoDB is the most mature serverless NoSQL with single-digit ms SLA; Cosmos DB offers multiple APIs (SQL, MongoDB, Cassandra, Gremlin, Table) with multi-region writes</td>
+        </tr>
+        <tr>
+          <td>Wide-column / time-series NoSQL</td>
+          <td><code class="svc">Cloud Bigtable</code></td>
+          <td>DynamoDB (also wide-column use cases), Keyspaces (managed Cassandra)</td>
+          <td>Azure Cosmos DB for Cassandra</td>
+          <td>Bigtable is HBase-compatible and purpose-built for petabyte-scale time-series; AWS Keyspaces (Cassandra) is serverless; Azure Cosmos DB for Cassandra is serverless Cassandra API; Bigtable has lowest latency at extreme scale but highest minimum cost</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">Data Warehouse &amp; Analytics</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Google Cloud</th>
+          <th>AWS</th>
+          <th>Azure</th>
+          <th>Notes / key difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Cloud data warehouse</td>
+          <td><code class="svc">BigQuery</code></td>
+          <td>Redshift</td>
+          <td>Azure Synapse Analytics</td>
+          <td>BigQuery is fully serverless (no cluster management, pay per query or flat-rate slots); Redshift requires cluster provisioning (Redshift Serverless is an option but less mature); Synapse combines data warehouse + Spark + data integration; BigQuery has fastest cold-query startup of the three</td>
+        </tr>
+        <tr>
+          <td>Managed Spark / Hadoop</td>
+          <td><code class="svc">Dataproc</code> / <code class="svc">Dataproc Serverless</code></td>
+          <td>EMR (Elastic MapReduce)</td>
+          <td>Azure HDInsight / Azure Databricks</td>
+          <td>GCP Dataproc uses GCS instead of HDFS; Dataproc Serverless removes cluster management for Spark; AWS EMR integrates with Graviton instances for cost; Azure Databricks (joint venture) is the most full-featured Spark platform across clouds</td>
+        </tr>
+        <tr>
+          <td>BI / visualization</td>
+          <td><code class="svc">Looker</code> / <code class="svc">Looker Studio</code></td>
+          <td>QuickSight</td>
+          <td>Power BI</td>
+          <td>Looker has the most sophisticated semantic modeling (LookML); QuickSight is cost-effective for AWS-native orgs; Power BI is dominant in Microsoft shops with deep Excel/Teams integration</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">Cache</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Google Cloud</th>
+          <th>AWS</th>
+          <th>Azure</th>
+          <th>Notes / key difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Managed Redis</td>
+          <td><code class="svc">Memorystore for Redis</code></td>
+          <td>ElastiCache for Redis</td>
+          <td>Azure Cache for Redis</td>
+          <td>All three offer managed Redis with HA; GCP max 300 GB standalone (Redis Cluster for horizontal scale); ElastiCache supports Redis 7.x with cluster mode; Azure Cache has Enterprise tier with Redis on Flash (hybrid DRAM+SSD) for larger datasets</td>
+        </tr>
+        <tr>
+          <td>Managed Memcached</td>
+          <td><code class="svc">Memorystore for Memcached</code></td>
+          <td>ElastiCache for Memcached</td>
+          <td>No direct managed equivalent</td>
+          <td>AWS ElastiCache for Memcached supports Auto Discovery; GCP Memorystore for Memcached also has Auto Discovery; Azure lacks a managed Memcached service (use Redis instead)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">Messaging &amp; Streaming</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Google Cloud</th>
+          <th>AWS</th>
+          <th>Azure</th>
+          <th>Notes / key difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Managed message / event streaming</td>
+          <td><code class="svc">Pub/Sub</code></td>
+          <td>Kinesis Data Streams, SNS, SQS</td>
+          <td>Azure Event Hubs, Azure Service Bus</td>
+          <td>Pub/Sub is a single service combining queue (SQS-like pull) and push fan-out (SNS-like); Kinesis is partition-based with shard management; SQS is simpler queue; Event Hubs uses Kafka protocol; Service Bus is enterprise messaging with topics/queues; Pub/Sub has no shard/partition management</td>
+        </tr>
+        <tr>
+          <td>Managed Kafka</td>
+          <td><code class="svc">Pub/Sub</code> (Kafka API via Confluent on GCP)</td>
+          <td>MSK (Managed Streaming for Kafka)</td>
+          <td>Azure Event Hubs (Kafka protocol)</td>
+          <td>GCP does not have a native managed Kafka (Confluent Cloud on GCP fills this gap); AWS MSK is fully managed Kafka; Azure Event Hubs exposes a Kafka-compatible API without running actual Kafka brokers</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">ETL &amp; Data Integration</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Google Cloud</th>
+          <th>AWS</th>
+          <th>Azure</th>
+          <th>Notes / key difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Managed stream &amp; batch ETL</td>
+          <td><code class="svc">Dataflow</code> (Apache Beam)</td>
+          <td>AWS Glue (Spark-based), Kinesis Data Firehose (streaming)</td>
+          <td>Azure Data Factory (ADF), Azure Stream Analytics</td>
+          <td>Dataflow uses Apache Beam and offers exactly-once semantics; Glue is PySpark-based with a data catalog; Firehose is simpler for stream-to-store delivery; ADF is a visual ETL tool closer to Cloud Data Fusion than Dataflow; Stream Analytics is SQL-based streaming</td>
+        </tr>
+        <tr>
+          <td>Visual ETL / low-code pipeline</td>
+          <td><code class="svc">Cloud Data Fusion</code></td>
+          <td>AWS Glue Studio</td>
+          <td>Azure Data Factory</td>
+          <td>All three offer visual pipeline designers; ADF is the most mature with 90+ connectors; Cloud Data Fusion runs on Dataproc (adds cluster latency); Glue Studio generates PySpark code</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">Networking &amp; VPC</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Google Cloud</th>
+          <th>AWS</th>
+          <th>Azure</th>
+          <th>Notes / key difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Virtual private network</td>
+          <td><code class="svc">VPC</code> (global, subnets are regional)</td>
+          <td>VPC (regional, AZ-scoped subnets)</td>
+          <td>Azure Virtual Network (VNet, regional)</td>
+          <td>GCP VPC is global — a single VPC spans all regions; AWS VPCs are regional with AZ subnets; Azure VNets are regional; GCP's global VPC simplifies multi-region designs but requires careful firewall rule management</td>
+        </tr>
+        <tr>
+          <td>Multi-VPC / transitive routing</td>
+          <td><code class="svc">Network Connectivity Center</code> / Shared VPC</td>
+          <td>Transit Gateway</td>
+          <td>Azure Virtual WAN / VNet Peering with Gateway Transit</td>
+          <td>GCP VPC Peering is non-transitive; NCC provides hub-and-spoke transitive routing; AWS Transit Gateway is the gold standard for hub-and-spoke; Azure Virtual WAN provides managed SD-WAN with transit routing</td>
+        </tr>
+        <tr>
+          <td>Load balancing</td>
+          <td><code class="svc">Cloud Load Balancing</code> (global HTTP(S), Network, Internal)</td>
+          <td>ALB (Application), NLB (Network), CLB (Classic), GWLB</td>
+          <td>Azure Application Gateway, Azure Load Balancer, Azure Front Door</td>
+          <td>GCP external HTTP(S) LB is global Anycast (single IP routes worldwide); AWS ALB is regional; Azure Front Door provides global HTTP routing similar to GCP's global LB; Azure Application Gateway is regional WAF+LB</td>
+        </tr>
+        <tr>
+          <td>DDoS / WAF</td>
+          <td><code class="svc">Cloud Armor</code></td>
+          <td>AWS WAF + AWS Shield</td>
+          <td>Azure WAF + Azure DDoS Protection</td>
+          <td>Cloud Armor is tightly integrated with Cloud LB; AWS Shield Standard is free; Shield Advanced adds cost; Azure DDoS Protection Standard applies per-VNet; all support OWASP rules and geo-blocking</td>
+        </tr>
+        <tr>
+          <td>CDN</td>
+          <td><code class="svc">Cloud CDN</code></td>
+          <td>CloudFront</td>
+          <td>Azure CDN / Azure Front Door</td>
+          <td>Cloud CDN uses Google's Anycast edge PoPs; CloudFront has the largest PoP count globally and Lambda@Edge for serverless at the edge; Azure Front Door combines CDN + global LB + WAF in one service</td>
+        </tr>
+        <tr>
+          <td>DNS</td>
+          <td><code class="svc">Cloud DNS</code></td>
+          <td>Route 53</td>
+          <td>Azure DNS</td>
+          <td>Route 53 is the most feature-rich (health-checked routing, latency routing, geoproximity routing, alias records); Cloud DNS and Azure DNS are standard authoritative DNS; Route 53 Resolver simplifies hybrid DNS; GCP uses Cloud DNS forwarding zones for hybrid</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">Hybrid &amp; Multi-Cloud Connectivity</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Google Cloud</th>
+          <th>AWS</th>
+          <th>Azure</th>
+          <th>Notes / key difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Dedicated private circuit</td>
+          <td><code class="svc">Cloud Interconnect</code> (Dedicated)</td>
+          <td>AWS Direct Connect</td>
+          <td>Azure ExpressRoute</td>
+          <td>All three require colocation or carrier; GCP and AWS circuits are NOT encrypted by default (add VPN for encryption); Azure ExpressRoute with MACsec provides layer 2 encryption; GCP offers 10 or 100 Gbps ports; AWS offers 1–100 Gbps; Azure offers 50 Mbps to 100 Gbps via providers</td>
+        </tr>
+        <tr>
+          <td>Managed VPN</td>
+          <td><code class="svc">Cloud VPN (HA VPN)</code></td>
+          <td>AWS Site-to-Site VPN</td>
+          <td>Azure VPN Gateway</td>
+          <td>GCP HA VPN offers 99.99% SLA with two tunnels; max ~3 Gbps per tunnel; AWS Site-to-Site VPN max 1.25 Gbps per tunnel (ECMP for aggregation); Azure VPN Gateway up to 10 Gbps with VpnGw5 SKU</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">IAM &amp; Security</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Google Cloud</th>
+          <th>AWS</th>
+          <th>Azure</th>
+          <th>Notes / key difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Identity &amp; access management</td>
+          <td><code class="svc">Cloud IAM</code></td>
+          <td>AWS IAM</td>
+          <td>Azure RBAC + Azure Active Directory (Entra ID)</td>
+          <td>GCP IAM uses roles bound at project/folder/org level; AWS IAM uses policy documents attached to users/roles/resources; Azure separates Azure AD (identity) from RBAC (resource authorization); GCP Workload Identity Federation replaces service account keys for cross-cloud auth</td>
+        </tr>
+        <tr>
+          <td>Key management</td>
+          <td><code class="svc">Cloud KMS</code> / <code class="svc">Cloud HSM</code></td>
+          <td>AWS KMS / AWS CloudHSM</td>
+          <td>Azure Key Vault (software + HSM tiers)</td>
+          <td>All three offer software-backed managed keys and dedicated HSM options; GCP Cloud KMS keys are regional; AWS KMS is regional with automatic key rotation; Azure Key Vault Premium uses FIPS 140-2 Level 2 HSMs; Managed HSM is Level 3</td>
+        </tr>
+        <tr>
+          <td>Secrets management</td>
+          <td><code class="svc">Secret Manager</code></td>
+          <td>AWS Secrets Manager</td>
+          <td>Azure Key Vault (Secrets)</td>
+          <td>AWS Secrets Manager has native automatic rotation for RDS, Redshift, DocumentDB; GCP Secret Manager requires external rotation via Pub/Sub; Azure Key Vault handles keys, secrets, and certificates in one service</td>
+        </tr>
+        <tr>
+          <td>Cloud security posture</td>
+          <td><code class="svc">Security Command Center</code></td>
+          <td>AWS Security Hub + GuardDuty</td>
+          <td>Microsoft Defender for Cloud</td>
+          <td>All three aggregate findings from multiple security services; GCP SCC requires Premium for threat detection; AWS GuardDuty uses ML for threat detection; Defender for Cloud extends to on-premises and multi-cloud servers via Azure Arc</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">Monitoring, Logging &amp; Observability</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Google Cloud</th>
+          <th>AWS</th>
+          <th>Azure</th>
+          <th>Notes / key difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Cloud monitoring</td>
+          <td><code class="svc">Cloud Monitoring</code></td>
+          <td>CloudWatch Metrics + Alarms</td>
+          <td>Azure Monitor</td>
+          <td>GCP Cloud Monitoring supports multi-cloud metrics via Ops Agent; AWS CloudWatch is deeply integrated across all AWS services; Azure Monitor is the umbrella for metrics, logs, traces, and alerts</td>
+        </tr>
+        <tr>
+          <td>Centralized logging</td>
+          <td><code class="svc">Cloud Logging</code></td>
+          <td>CloudWatch Logs</td>
+          <td>Azure Monitor Logs (Log Analytics)</td>
+          <td>GCP Cloud Logging exports to BigQuery for SQL-based log analytics; CloudWatch Logs Insights uses a proprietary query language; Azure Log Analytics uses KQL (Kusto Query Language)</td>
+        </tr>
+        <tr>
+          <td>Distributed tracing</td>
+          <td><code class="svc">Cloud Trace</code></td>
+          <td>AWS X-Ray</td>
+          <td>Azure Application Insights</td>
+          <td>All three support OpenTelemetry; AWS X-Ray uses sampling groups and service maps; Azure Application Insights is a full APM (traces, metrics, exceptions, user behavior) in one service</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">DevOps &amp; IaC</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Google Cloud</th>
+          <th>AWS</th>
+          <th>Azure</th>
+          <th>Notes / key difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>CI/CD</td>
+          <td><code class="svc">Cloud Build</code> + <code class="svc">Cloud Deploy</code></td>
+          <td>CodeBuild + CodePipeline + CodeDeploy</td>
+          <td>Azure DevOps (Pipelines) / GitHub Actions</td>
+          <td>GCP Cloud Build uses YAML steps similar to GitHub Actions; Cloud Deploy adds progressive delivery to GKE/Cloud Run; AWS Code* family is tightly integrated; Azure DevOps Pipelines is mature and enterprise-proven; all three integrate with GitHub as source</td>
+        </tr>
+        <tr>
+          <td>Infrastructure as Code</td>
+          <td><code class="svc">Terraform</code> (preferred) / <code class="svc">Config Connector</code> / Deployment Manager (legacy)</td>
+          <td>CloudFormation / Terraform / CDK</td>
+          <td>ARM Templates / Bicep / Terraform</td>
+          <td>GCP deprecated Deployment Manager in favor of Terraform (now an explicit PCA exam requirement); AWS CDK generates CloudFormation using TypeScript/Python; Azure Bicep is a DSL that compiles to ARM; Terraform is the multi-cloud standard across all three</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">AI / ML / Generative AI</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Google Cloud</th>
+          <th>AWS</th>
+          <th>Azure</th>
+          <th>Notes / key difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>MLOps platform</td>
+          <td><code class="svc">Vertex AI</code> (Gemini Enterprise Agent Platform)</td>
+          <td>SageMaker</td>
+          <td>Azure Machine Learning</td>
+          <td>Vertex AI has the most integrated end-to-end MLOps with Google's foundation models; SageMaker has the most training job options and instance variety; Azure ML integrates with MLflow and has strong enterprise governance features; all three support Kubeflow Pipelines concepts</td>
+        </tr>
+        <tr>
+          <td>Foundation model / GenAI API</td>
+          <td><code class="svc">Gemini API</code> (Gemini 2.0/2.5 via Vertex AI)</td>
+          <td>Amazon Bedrock (Claude, Llama, Titan, etc.)</td>
+          <td>Azure OpenAI Service (GPT-4o, o1, etc.)</td>
+          <td>GCP provides Gemini natively (Google's own models); Bedrock is a multi-model marketplace (third-party models including Anthropic Claude); Azure OpenAI is the exclusive enterprise channel for OpenAI's GPT and o-series models; Gemini has the longest context window (up to 1M tokens)</td>
+        </tr>
+        <tr>
+          <td>Enterprise search / RAG</td>
+          <td><code class="svc">Vertex AI Search</code></td>
+          <td>Amazon Kendra + Bedrock Knowledge Bases</td>
+          <td>Azure AI Search (Cognitive Search)</td>
+          <td>Vertex AI Search offers grounding for Gemini with minimal configuration; Amazon Kendra uses ML-based relevance; Bedrock Knowledge Bases auto-chunks and embeds documents; Azure AI Search supports hybrid (vector + keyword) search and is the most configurable of the three</td>
+        </tr>
+        <tr>
+          <td>Pre-trained AI APIs</td>
+          <td><code class="svc">Cloud Vision, Natural Language, Speech-to-Text, Translation, Document AI</code></td>
+          <td>Rekognition, Comprehend, Transcribe, Translate, Textract</td>
+          <td>Azure AI Vision, Language, Speech, Translator, Form Recognizer</td>
+          <td>All three offer similar pre-trained APIs; GCP Document AI is strongest for structured document extraction; AWS Textract is strong for forms/tables; Azure Form Recognizer (now Document Intelligence) has the best pre-built models for industry-specific documents</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="sec">Management &amp; Governance</h2>
+  <div class="tbl">
+    <table>
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Google Cloud</th>
+          <th>AWS</th>
+          <th>Azure</th>
+          <th>Notes / key difference</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Resource hierarchy</td>
+          <td><code class="svc">Resource Manager</code> (Org &gt; Folders &gt; Projects)</td>
+          <td>AWS Organizations (Management Account &gt; OUs &gt; Accounts)</td>
+          <td>Azure Management Groups &gt; Subscriptions &gt; Resource Groups</td>
+          <td>GCP projects are the billing and IAM boundary; AWS accounts are the isolation boundary; Azure subscriptions are the billing boundary with resource groups for grouping; GCP's hierarchical IAM inheritance is most straightforward for policy enforcement</td>
+        </tr>
+        <tr>
+          <td>Policy guardrails</td>
+          <td><code class="svc">Organization Policy Service</code></td>
+          <td>AWS Service Control Policies (SCPs) + AWS Config Rules</td>
+          <td>Azure Policy</td>
+          <td>GCP Org Policy is preventive (blocks actions); AWS SCPs set permission boundaries; Config Rules are detective (after the fact); Azure Policy supports both audit and deny effects with remediation tasks</td>
+        </tr>
+        <tr>
+          <td>API management</td>
+          <td><code class="svc">Apigee</code> / <code class="svc">Cloud Endpoints</code></td>
+          <td>Amazon API Gateway</td>
+          <td>Azure API Management (APIM)</td>
+          <td>Apigee is the most feature-rich (monetization, developer portal, analytics); AWS API Gateway tightly integrates with Lambda; Azure APIM supports multi-region and self-hosted gateway for hybrid; Cloud Endpoints is lightweight alternative to Apigee for GCP-native APIs</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <b>GCP differentiators that regularly appear on the PCA exam:</b> Two GCP services have no true equivalents on AWS or Azure and should be understood as genuine architectural advantages: (1) <b><code class="svc">Cloud Spanner</code></b> — the only globally distributed relational database with external consistency and horizontal write scaling. When an exam scenario requires a globally consistent, horizontally scalable SQL database (think: global financial ledger, worldwide inventory, gaming leaderboard that must never show stale committed data), Spanner is the answer. AWS Aurora Global and Azure Cosmos DB are the closest alternatives but neither offers the same consistency guarantees with SQL semantics. (2) <b><code class="svc">BigQuery</code></b> — the only major cloud data warehouse that is fully serverless with no cluster to provision; query any petabyte-scale dataset in seconds, paying only for bytes scanned. Redshift Serverless exists but requires more configuration; Synapse has separate compute and storage pools to manage. When a scenario asks for a data warehouse with no infrastructure management, near-instant query scale, and built-in ML, BigQuery is the answer. Additionally, GCP's <b>global VPC</b> (a single VPC spanning all regions) simplifies multi-region architectures compared to AWS and Azure where VPCs/VNets are regional.
+  </div>
+
+</section>
+
     <section class="page" id="quiz">
       <div class="eyebrow" style="color:#b58a00">Practice</div>
       <h1 class="pt">Practice Quiz — 351 Questions</h1>
