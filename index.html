@@ -127,6 +127,14 @@
   .navbtn:hover:not(:disabled){border-color:var(--compute);color:var(--compute)}
   .navbtn:disabled{opacity:.38;cursor:default}
   .qcounter{font-size:13.5px;color:var(--slate);font-variant-numeric:tabular-nums;font-weight:700}
+  .qtools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:-8px 0 14px}
+  .navbtn.sm{padding:6px 12px;font-size:12.5px}
+  .navbtn.sm.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .jump{font-size:12.5px;color:var(--slate);display:inline-flex;align-items:center;gap:6px}
+  .jump input{width:64px;padding:5px 8px;border:1px solid var(--rule);border-radius:6px;font-family:inherit;font-size:12.5px}
+  .flagbtn{margin-left:auto;border:1px solid var(--rule);background:#fff;color:var(--faint);border-radius:6px;padding:3px 10px;cursor:pointer;font-size:12.5px;font-family:inherit;white-space:nowrap}
+  .flagbtn.on{color:#b45309;border-color:#e7b765;background:#fbf1df}
+  .kbd-hint{font-size:11.5px;color:var(--faint);margin-top:10px;text-align:center}
   /* architecture diagrams */
   .diagram{border:1px solid var(--rule);background:#fbfcfd;border-radius:10px;padding:18px;margin:12px 0 6px;overflow-x:auto}
   .dgrid{display:flex;flex-direction:column;gap:6px;min-width:560px}
@@ -2905,12 +2913,19 @@
         <div class="filters" id="filters"></div>
         <button class="reset" id="reset">↺ Reset all</button>
       </div>
+      <div class="qtools">
+        <button class="navbtn sm" id="shuffleq">🔀 Shuffle</button>
+        <button class="navbtn sm" id="unansweredq">↪ Next unanswered</button>
+        <button class="navbtn sm" id="reviewq">★ Review flagged</button>
+        <span class="jump">Go to # <input id="jumpq" type="number" min="1" inputmode="numeric"></span>
+      </div>
       <div class="quizstage" id="quizstage"></div>
       <div class="quiznav">
         <button class="navbtn" id="prevq">← Previous</button>
         <span class="qcounter" id="qcounter"></span>
         <button class="navbtn" id="nextq">Next →</button>
       </div>
+      <div class="kbd-hint">Keys: <b>1–4</b> or <b>A–D</b> to answer · <b>←/→</b> to move · your progress is saved automatically.</div>
     </section>
   </main>
 </div>
@@ -3271,15 +3286,21 @@ const Q=[
 {"c":"case","q":"Altostrat Media is concerned about the cost of running AI inference workloads. They run Gemini API calls for content summarization on approximately 500,000 episodes per month, using an average of 2,000 input tokens and 500 output tokens per request. The summaries are deterministic given the same input content; the same episode always produces the same summary if the content has not changed. The engineering team wants to reduce Vertex AI API costs by at least 40% without degrading summary quality. Which approach is most appropriate?","o":["Enable Vertex AI context caching for the stable portions of the prompt (system instructions and few-shot examples) that are reused across all summarization requests. Store completed summaries in Cloud Firestore keyed by episode ID and content hash. On each summarization request, check Firestore first; only call the Gemini API if no cached summary exists for that content hash.","Switch from Gemini Pro to Gemini Flash, which has a lower per-token cost, and accept any quality difference without testing it against the current output quality baseline.","Batch all summarization requests into nightly runs using Vertex AI Batch Prediction, which has no cost difference from online prediction but reduces operational complexity.","Compress the input text by removing stop words before sending to the Gemini API, reducing the input token count, and accept that summary quality may degrade because important context words may be removed."],"a":0,"e":"Vertex AI context caching reduces cost for repeated prompt prefixes, and application-level caching in Firestore eliminates redundant API calls for already-summarized episodes, together achieving well over 40% cost reduction.","oe":["Correct - Context caching saves on reused prompt prefixes (system instructions, few-shot examples) across all requests; Firestore application caching ensures episodes summarized previously are never re-called to the API, directly cutting the 500K monthly call volume.","Switching to Gemini Flash reduces per-token cost but does not eliminate redundant calls for identical content; without application caching, the same episode may still be summarized multiple times; quality impact must be validated before production use.","Vertex AI Batch Prediction does offer discounted pricing compared to online prediction for large workloads; however, the option as stated claims no cost difference which is factually incorrect, and it alone does not address redundant duplicate requests.","Removing stop words reduces token count marginally for long documents but can degrade summary quality significantly; the savings from fewer tokens are small compared to eliminating entire redundant API calls via caching."]}
 ];
 
-let activeFilter='all',cur=0,deck=[];
-const state={};
-function buildFilters(){const f=document.getElementById('filters');const cats=['all',...Object.keys(CATS)];f.innerHTML='';cats.forEach(c=>{const b=document.createElement('button');const n=c==='all'?Q.length:Q.filter(x=>x.c===c).length;b.textContent=(c==='all'?'All':CATS[c].label)+' '+n;b.className=c===activeFilter?'on':'';b.onclick=()=>{activeFilter=c;cur=0;buildDeck();render();};f.appendChild(b);});}
-function buildDeck(){deck=Q.map((q,i)=>i).filter(i=>activeFilter==='all'||Q[i].c===activeFilter);if(cur>=deck.length)cur=0;}
+let activeFilter='all',cur=0,deck=[],shuffleOn=false,reviewMode=false;
+const state={},flags=new Set();
+const LS='pca-quiz-v1';
+function save(){try{localStorage.setItem(LS,JSON.stringify({state,flags:[...flags],cur,activeFilter,shuffleOn,reviewMode}));}catch(e){}}
+function load(){try{const d=JSON.parse(localStorage.getItem(LS)||'{}');if(d.state)Object.assign(state,d.state);if(Array.isArray(d.flags))d.flags.forEach(i=>flags.add(i));if(typeof d.cur==='number')cur=d.cur;if(d.activeFilter)activeFilter=d.activeFilter;shuffleOn=!!d.shuffleOn;reviewMode=!!d.reviewMode;}catch(e){}}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+function buildFilters(){const f=document.getElementById('filters');const cats=['all',...Object.keys(CATS)];f.innerHTML='';cats.forEach(c=>{const b=document.createElement('button');const n=c==='all'?Q.length:Q.filter(x=>x.c===c).length;b.textContent=(c==='all'?'All':CATS[c].label)+' '+n;b.className=(!reviewMode&&c===activeFilter)?'on':'';b.onclick=()=>{activeFilter=c;reviewMode=false;cur=0;buildDeck();render();save();};f.appendChild(b);});}
+function buildDeck(){if(reviewMode){deck=[...flags].sort((a,b)=>a-b);}else{deck=Q.map((q,i)=>i).filter(i=>activeFilter==='all'||Q[i].c===activeFilter);}if(shuffleOn)shuffle(deck);if(cur>=deck.length)cur=Math.max(0,deck.length-1);}
 function render(){
   const stage=document.getElementById('quizstage');
-  if(!deck.length){stage.innerHTML='<div class="q">No questions in this filter.</div>';document.getElementById('qcounter').textContent='0 / 0';document.getElementById('prevq').disabled=true;document.getElementById('nextq').disabled=true;return;}
+  document.getElementById('reviewq').classList.toggle('on',reviewMode);
+  document.getElementById('shuffleq').classList.toggle('on',shuffleOn);
+  if(!deck.length){stage.innerHTML='<div class="q">'+(reviewMode?'No questions flagged yet — tap ☆ flag on a question.':'No questions in this filter.')+'</div>';document.getElementById('qcounter').textContent='0 / 0';document.getElementById('prevq').disabled=true;document.getElementById('nextq').disabled=true;return;}
   const i=deck[cur],item=Q[i],meta=CATS[item.c],st=state[i]||{},answered=st.ans!==undefined;
-  let h=`<div class="q"><div class="meta"><span class="qn">Q${i+1}</span><span class="cat ${meta.cls}">${meta.label}</span></div><div class="stem">${item.q}</div><div class="opts">`;
+  let h=`<div class="q"><div class="meta"><span class="qn">Q${i+1}</span><span class="cat ${meta.cls}">${meta.label}</span><button class="flagbtn${flags.has(i)?' on':''}" id="flagq">${flags.has(i)?'★ flagged':'☆ flag'}</button></div><div class="stem">${item.q}</div><div class="opts">`;
   item.o.forEach((txt,j)=>{
     const oe=item.oe?item.oe[j]:null;const expl=oe||(j===item.a?item.e:null);
     let cls='opt';if(answered){cls+=' revealed';if(j===item.a)cls+=' correct';else if(j===st.ans)cls+=' chosenwrong wrong';}
@@ -3289,18 +3310,26 @@ function render(){
   if(answered)h+=`<button class="qreset" id="qreset">↺ Try this question again</button>`;
   h+=`</div>`;
   stage.innerHTML=h;
-  if(!answered)stage.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{st.ans=+b.dataset.j;state[i]=st;render();updateScore();});
-  const qr=document.getElementById('qreset');if(qr)qr.onclick=()=>{delete state[i];render();updateScore();};
+  if(!answered)stage.querySelectorAll('.opt').forEach(b=>b.onclick=()=>answer(+b.dataset.j));
+  const qr=document.getElementById('qreset');if(qr)qr.onclick=()=>{delete state[i];render();updateScore();save();};
+  document.getElementById('flagq').onclick=()=>{flags.has(i)?flags.delete(i):flags.add(i);render();save();};
   document.getElementById('qcounter').textContent=`${cur+1} / ${deck.length}`;
   document.getElementById('prevq').disabled=cur===0;
   document.getElementById('nextq').disabled=cur===deck.length-1;
+  const jq=document.getElementById('jumpq');jq.max=deck.length;jq.value=cur+1;
 }
+function answer(j){const i=deck[cur],st=state[i]||{};if(st.ans!==undefined)return;st.ans=j;state[i]=st;render();updateScore();save();}
+function go(n){if(n>=0&&n<deck.length){cur=n;render();save();}}
 function updateScore(){let ans=0,c=0;for(const k in state){if(state[k].ans!==undefined){ans++;if(state[k].ans===Q[+k].a)c++;}}document.getElementById('score').textContent=c;document.getElementById('answered').textContent=ans;document.getElementById('pct').textContent=ans?'· '+Math.round(c/ans*100)+'%':'';document.getElementById('navprog').textContent=`${ans} / ${Q.length} answered`;}
-document.getElementById('reset').onclick=()=>{for(const k in state)delete state[k];cur=0;render();updateScore();};
-document.getElementById('prevq').onclick=()=>{if(cur>0){cur--;render();}};
-document.getElementById('nextq').onclick=()=>{if(cur<deck.length-1){cur++;render();}};
-document.addEventListener('keydown',e=>{if(!document.getElementById('quiz').classList.contains('show'))return;if(e.key==='ArrowLeft'&&cur>0){cur--;render();}else if(e.key==='ArrowRight'&&cur<deck.length-1){cur++;render();}});
-buildFilters();buildDeck();render();updateScore();
+document.getElementById('reset').onclick=()=>{for(const k in state)delete state[k];flags.clear();cur=0;reviewMode=false;buildFilters();buildDeck();render();updateScore();save();};
+document.getElementById('prevq').onclick=()=>go(cur-1);
+document.getElementById('nextq').onclick=()=>go(cur+1);
+document.getElementById('shuffleq').onclick=()=>{shuffleOn=!shuffleOn;cur=0;buildDeck();render();save();};
+document.getElementById('reviewq').onclick=()=>{reviewMode=!reviewMode;cur=0;buildFilters();buildDeck();render();save();};
+document.getElementById('unansweredq').onclick=()=>{for(let k=1;k<=deck.length;k++){const idx=(cur+k)%deck.length;const s=state[deck[idx]];if(!s||s.ans===undefined){go(idx);return;}}};
+document.getElementById('jumpq').addEventListener('change',e=>{const n=parseInt(e.target.value,10);if(n>=1&&n<=deck.length)go(n-1);});
+document.addEventListener('keydown',e=>{if(!document.getElementById('quiz').classList.contains('show'))return;if(e.target&&e.target.tagName==='INPUT')return;if(e.key==='ArrowLeft')go(cur-1);else if(e.key==='ArrowRight')go(cur+1);else if(['1','2','3','4'].includes(e.key))answer(+e.key-1);else if(['a','b','c','d','A','B','C','D'].includes(e.key))answer('abcd'.indexOf(e.key.toLowerCase()));});
+load();buildFilters();buildDeck();render();updateScore();
 const buttons=document.querySelectorAll('nav.side button[data-go]');
 buttons.forEach(b=>b.onclick=()=>{const id=b.dataset.go;document.querySelectorAll('.page').forEach(p=>p.classList.remove('show'));document.getElementById(id).classList.add('show');buttons.forEach(x=>x.classList.remove('active'));b.classList.add('active');window.scrollTo({top:0,behavior:'smooth'});});
 </script>
