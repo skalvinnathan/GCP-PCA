@@ -1,0 +1,446 @@
+<title>PCA Exam Cheat Sheet</title>
+<style>
+  :root {
+    --ink: #11161d;
+    --paper: #faf9f6;
+    --card: #ffffff;
+    --slate: #5a6675;
+    --slate-faint: #8c97a6;
+    --rule: #e6e3db;
+    --rule-soft: #efece5;
+    --compute: #1a6fe0;
+    --compute-bg: #eaf2fd;
+    --data: #137a3f;
+    --data-bg: #e7f4ec;
+    --net: #7b34d6;
+    --net-bg: #f1e9fb;
+    --sec: #c0392b;
+    --sec-bg: #fbeae8;
+    --ops: #b06f12;
+    --ops-bg: #fbf1df;
+    --case: #0d6b75;
+    --case-bg: #e3f2f3;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 40px 28px 80px; }
+
+  /* Masthead */
+  header.mast {
+    display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between;
+    gap: 20px; padding-bottom: 22px; border-bottom: 3px solid var(--ink); margin-bottom: 8px;
+  }
+  .mast h1 {
+    font-size: clamp(30px, 4.4vw, 46px); line-height: 1.02; margin: 0;
+    font-weight: 800; letter-spacing: -0.02em; text-wrap: balance;
+  }
+  .mast .sub { color: var(--slate); font-size: 15px; margin-top: 8px; max-width: 56ch; }
+  .mast .badge {
+    text-align: right; font-size: 12.5px; color: var(--slate); line-height: 1.7;
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .mast .badge b { color: var(--ink); font-weight: 700; }
+
+  .alert {
+    margin: 22px 0 34px; background: var(--sec-bg); border: 1px solid #f0c9c3;
+    border-left: 5px solid var(--sec); border-radius: 8px; padding: 14px 18px;
+    font-size: 14px; color: #5e1f17;
+  }
+  .alert b { color: var(--sec); }
+
+  /* Section */
+  section { margin-top: 40px; }
+  .sec-head {
+    display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px;
+    padding-bottom: 8px; border-bottom: 2px solid var(--rule);
+  }
+  .sec-head .num {
+    font-family: var(--mono); font-size: 13px; font-weight: 700;
+    padding: 3px 9px; border-radius: 5px; letter-spacing: 0.02em;
+  }
+  .sec-head h2 {
+    font-size: 21px; font-weight: 800; margin: 0; letter-spacing: -0.01em;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .sec-head .tag { margin-left: auto; font-size: 12.5px; color: var(--slate-faint); font-style: italic; }
+
+  /* color tokens per domain */
+  .d-compute .num { background: var(--compute-bg); color: var(--compute); }
+  .d-compute .sec-head { border-bottom-color: var(--compute); }
+  .d-data .num { background: var(--data-bg); color: var(--data); }
+  .d-data .sec-head { border-bottom-color: var(--data); }
+  .d-net .num { background: var(--net-bg); color: var(--net); }
+  .d-net .sec-head { border-bottom-color: var(--net); }
+  .d-sec .num { background: var(--sec-bg); color: var(--sec); }
+  .d-sec .sec-head { border-bottom-color: var(--sec); }
+  .d-ops .num { background: var(--ops-bg); color: var(--ops); }
+  .d-ops .sec-head { border-bottom-color: var(--ops); }
+  .d-case .num { background: var(--case-bg); color: var(--case); }
+  .d-case .sec-head { border-bottom-color: var(--case); }
+
+  /* Card grid */
+  .grid { display: grid; gap: 16px; }
+  .cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .cols-3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 860px) { .cols-2, .cols-3 { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--card); border: 1px solid var(--rule); border-radius: 10px;
+    padding: 16px 18px; box-shadow: 0 1px 2px rgba(17,22,29,0.03);
+  }
+  .card h3 {
+    margin: 0 0 10px; font-size: 13px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.05em; color: var(--slate);
+  }
+
+  /* Trigger list: keyword -> answer */
+  .trig { list-style: none; margin: 0; padding: 0; }
+  .trig li {
+    display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: baseline;
+    padding: 7px 0; border-bottom: 1px dotted var(--rule-soft);
+  }
+  .trig li:last-child { border-bottom: 0; }
+  .trig .k { font-size: 13.5px; color: var(--ink); }
+  .trig .a {
+    font-family: var(--mono); font-size: 12.5px; font-weight: 600; text-align: right;
+    white-space: nowrap;
+  }
+  .pill {
+    display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px;
+    font-weight: 700; font-family: var(--mono); letter-spacing: -0.01em;
+  }
+  .p-compute { background: var(--compute-bg); color: var(--compute); }
+  .p-data { background: var(--data-bg); color: var(--data); }
+  .p-net { background: var(--net-bg); color: var(--net); }
+  .p-sec { background: var(--sec-bg); color: var(--sec); }
+  .p-ops { background: var(--ops-bg); color: var(--ops); }
+  .p-case { background: var(--case-bg); color: var(--case); }
+
+  /* Tables */
+  .tbl-scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+  th { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--slate); font-weight: 700; border-bottom: 1.5px solid var(--rule); }
+  td b { font-weight: 700; }
+  tbody tr:last-child td { border-bottom: 0; }
+
+  /* Decision tree */
+  pre.tree {
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.55; margin: 0;
+    background: #f4f6f8; border: 1px solid var(--rule); border-radius: 8px;
+    padding: 14px 16px; overflow-x: auto; color: #2a3543;
+  }
+  pre.tree b { color: var(--compute); font-weight: 700; }
+
+  /* Inline service highlight */
+  code.svc { font-family: var(--mono); font-size: 12.5px; font-weight: 600; background: #f1f3f5; padding: 1px 5px; border-radius: 4px; }
+
+  .note { font-size: 12.5px; color: var(--slate); margin-top: 10px; }
+  .note strong { color: var(--sec); }
+
+  /* plan / mechanics strip */
+  .mech { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+  @media (max-width: 860px) { .mech { grid-template-columns: 1fr; } }
+  .mech .card { border-top: 4px solid var(--ops); }
+  .mech .big { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+  .mech .lbl { font-size: 12px; color: var(--slate); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  footer { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--rule); font-size: 12.5px; color: var(--slate-faint); }
+  a { color: var(--compute); }
+  ::selection { background: #ffe9a8; }
+</style>
+
+<div class="wrap">
+  <header class="mast">
+    <div>
+      <h1>Cloud Architect — Cram Sheet</h1>
+      <div class="sub">Google Cloud Professional Cloud Architect. The keyword&nbsp;→&nbsp;service triggers and decision tables that actually move the needle. Built on exam guide <b>v6.1</b>.</div>
+    </div>
+    <div class="badge">
+      EXAM &middot; <b>50–60 Q</b> / <b>2 hr</b><br>
+      Case studies &middot; <b>~30–40%</b><br>
+      Pass &middot; <b>~70%</b> (unofficial)
+    </div>
+  </header>
+
+  <div class="alert">
+    <b>⚠ Case studies changed (Oct 30, 2025).</b> Mountkirk Games, TerramEarth &amp; Helicopter Racing League are <b>retired</b>. The current four are <b>EHR Healthcare, Altostrat Media, Cymbal Retail, KnightMotives Automotive</b> — and three center on <b>Generative AI (Vertex AI / Gemini / Imagen)</b>. Study the GenAI service picks below.
+  </div>
+
+  <!-- COMPUTE -->
+  <section class="d-compute">
+    <div class="sec-head"><span class="num">01</span><h2>Compute</h2><span class="tag">pick the runtime by control vs. ops</span></div>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>Decision tree</h3>
+        <pre class="tree">Containerized?
+├─ NO
+│  ├─ OS control / licensing / lift-shift ─→ <b>Compute Engine</b>
+│  ├─ Event-driven snippet ───────────────→ <b>Cloud Run functions</b>
+│  └─ Managed web app, no Docker ─────────→ <b>App Engine Std</b>
+└─ YES
+   ├─ Single stateless, scale-to-zero ────→ <b>Cloud Run</b>
+   └─ Orchestration / many services
+      ├─ Hands-off, pay per pod ──────────→ <b>GKE Autopilot</b>
+      └─ Node-level control / DaemonSets ─→ <b>GKE Standard</b></pre>
+        <p class="note"><strong>Trap:</strong> App Engine <b>Flexible</b> &amp; Cloud Run with min-instances <b>don't</b> scale to zero. For "minimize cost when idle" → Standard / Cloud Run scale-to-zero.</p>
+      </div>
+      <div class="card">
+        <h3>Keyword → answer</h3>
+        <ul class="trig">
+          <li><span class="k">"Lift-and-shift / existing license / OS control"</span><span class="a"><span class="pill p-compute">Compute Engine</span></span></li>
+          <li><span class="k">"Run code, scale to zero, single container"</span><span class="a"><span class="pill p-compute">Cloud Run</span></span></li>
+          <li><span class="k">"Microservices / Kubernetes / portability"</span><span class="a"><span class="pill p-compute">GKE</span></span></li>
+          <li><span class="k">"Reduce ops, pay per pod"</span><span class="a"><span class="pill p-compute">GKE Autopilot</span></span></li>
+          <li><span class="k">"Fault-tolerant batch, cheapest"</span><span class="a"><span class="pill p-compute">Spot VMs</span></span></li>
+          <li><span class="k">"Predictable steady 24/7, lowest cost"</span><span class="a"><span class="pill p-compute">CUD</span></span></li>
+          <li><span class="k">"BYOL per-core / physical isolation"</span><span class="a"><span class="pill p-compute">Sole-tenant</span></span></li>
+          <li><span class="k">"Recreate failed VMs automatically"</span><span class="a"><span class="pill p-compute">MIG autohealing</span></span></li>
+          <li><span class="k">"Survive a zone failure (VMs)"</span><span class="a"><span class="pill p-compute">Regional MIG</span></span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- STORAGE + DB -->
+  <section class="d-data">
+    <div class="sec-head"><span class="num">02</span><h2>Storage &amp; Databases</h2><span class="tag">the heaviest-tested domain</span></div>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>Database selection matrix</h3>
+        <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>Service</th><th>Model</th><th>Pick when</th></tr></thead>
+          <tbody>
+            <tr><td><b>Cloud SQL</b></td><td>Relational, regional</td><td>Managed MySQL/Postgres/SQL Server; lift-and-shift OLTP</td></tr>
+            <tr><td><b>AlloyDB</b></td><td>Postgres, HTAP</td><td>Postgres but need speed/scale; Oracle→OSS migration</td></tr>
+            <tr><td><b>Spanner</b></td><td>Relational, global</td><td><b>global + strong consistency + relational + horizontal</b></td></tr>
+            <tr><td><b>Firestore</b></td><td>Doc NoSQL</td><td>Mobile/web app, real-time sync, offline</td></tr>
+            <tr><td><b>Bigtable</b></td><td>Wide-column</td><td><b>time-series / IoT / high throughput / low latency</b></td></tr>
+            <tr><td><b>BigQuery</b></td><td>Columnar OLAP</td><td><b>analytics / warehouse / BI / ad-hoc SQL on PB</b></td></tr>
+            <tr><td><b>Memorystore</b></td><td>In-memory</td><td>Cache / session / sub-ms / leaderboard</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p class="note"><strong>Trap:</strong> single-region relational → <b>Cloud SQL</b>, not Spanner (Spanner = cost trap unless global). <b>DMS</b> = migrate to Cloud SQL/AlloyDB · <b>Datastream</b> = ongoing CDC into BigQuery.</p>
+      </div>
+      <div class="card">
+        <h3>Cloud Storage classes</h3>
+        <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>Class</th><th>Min dur.</th><th>Access</th></tr></thead>
+          <tbody>
+            <tr><td><b>Standard</b></td><td>none</td><td>Hot / frequent</td></tr>
+            <tr><td><b>Nearline</b></td><td>30 d</td><td>&lt; monthly</td></tr>
+            <tr><td><b>Coldline</b></td><td>90 d</td><td>&lt; quarterly</td></tr>
+            <tr><td><b>Archive</b></td><td>365 d</td><td>&lt; yearly</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p class="note"><strong>Trap:</strong> all classes have the <b>same millisecond latency</b> — colder ≠ slower, just cheaper at rest / pricier to read. Early-delete before min duration still bills the full term.</p>
+        <ul class="trig" style="margin-top:10px">
+          <li><span class="k">"Unknown / variable access pattern"</span><span class="a"><span class="pill p-data">Autoclass</span></span></li>
+          <li><span class="k">"Immutable WORM compliance retention"</span><span class="a"><span class="pill p-data">Bucket Lock</span></span></li>
+          <li><span class="k">"Temp access, no Google account"</span><span class="a"><span class="pill p-data">Signed URL</span></span></li>
+          <li><span class="k">"PB-scale move, poor bandwidth"</span><span class="a"><span class="pill p-data">Transfer Appliance</span></span></li>
+          <li><span class="k">"Shared NFS across many VMs"</span><span class="a"><span class="pill p-data">Filestore</span></span></li>
+          <li><span class="k">"Highest IOPS, OK to lose data"</span><span class="a"><span class="pill p-data">Local SSD</span></span></li>
+          <li><span class="k">"Disk HA across zones"</span><span class="a"><span class="pill p-data">Regional PD</span></span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- NETWORKING -->
+  <section class="d-net">
+    <div class="sec-head"><span class="num">03</span><h2>Networking</h2><span class="tag">VPC, hybrid, load balancing</span></div>
+    <div class="grid cols-3">
+      <div class="card">
+        <h3>VPC &amp; connectivity</h3>
+        <ul class="trig">
+          <li><span class="k">"Central team owns subnets for many projects"</span><span class="a"><span class="pill p-net">Shared VPC</span></span></li>
+          <li><span class="k">"Connect 2 VPCs / orgs / merger"</span><span class="a"><span class="pill p-net">VPC Peering</span></span></li>
+          <li><span class="k">"Private SaaS access, no IP overlap"</span><span class="a"><span class="pill p-net">PSC</span></span></li>
+          <li><span class="k">"No-external-IP VM → Google APIs"</span><span class="a"><span class="pill p-net">Private Google Access</span></span></li>
+          <li><span class="k">"Private VM outbound only"</span><span class="a"><span class="pill p-net">Cloud NAT</span></span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Hybrid link ladder</h3>
+        <ul class="trig">
+          <li><span class="k">"Encrypted, low cost, quick" (99.99% = 2 tunnels)</span><span class="a"><span class="pill p-net">HA VPN</span></span></li>
+          <li><span class="k">"Mid bandwidth, no colo"</span><span class="a"><span class="pill p-net">Partner Interconnect</span></span></li>
+          <li><span class="k">"High bandwidth ≥10G, has colo, private"</span><span class="a"><span class="pill p-net">Dedicated Interconnect</span></span></li>
+          <li><span class="k">"Only Google public APIs, no SLA"</span><span class="a"><span class="pill p-net">Direct/Carrier Peering</span></span></li>
+        </ul>
+        <p class="note"><strong>Trap:</strong> Interconnect is <b>not encrypted</b> by default → layer HA VPN / MACsec if encryption required.</p>
+      </div>
+      <div class="card">
+        <h3>Load balancer choice</h3>
+        <ul class="trig">
+          <li><span class="k">"Global HTTP routing + CDN + WAF"</span><span class="a"><span class="pill p-net">Global Ext App LB</span></span></li>
+          <li><span class="k">"Preserve client IP / UDP / non-TCP"</span><span class="a"><span class="pill p-net">Passthrough Net LB</span></span></li>
+          <li><span class="k">"TLS offload, not HTTP, custom port"</span><span class="a"><span class="pill p-net">Proxy Net LB</span></span></li>
+          <li><span class="k">"Between internal app tiers"</span><span class="a"><span class="pill p-net">Internal LB</span></span></li>
+        </ul>
+        <p class="note">Global = App LB &amp; Proxy Net LB only; Passthrough is regional.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECURITY -->
+  <section class="d-sec">
+    <div class="sec-head"><span class="num">04</span><h2>Security &amp; IAM</h2><span class="tag">least privilege, perimeters, keys</span></div>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>Service &amp; access controls</h3>
+        <ul class="trig">
+          <li><span class="k">"Prevent exfiltration even with stolen creds"</span><span class="a"><span class="pill p-sec">VPC Service Controls</span></span></li>
+          <li><span class="k">"Block SQLi/XSS/DDoS, rate limit, geo"</span><span class="a"><span class="pill p-sec">Cloud Armor</span></span></li>
+          <li><span class="k">"Access internal app w/o VPN, per-user"</span><span class="a"><span class="pill p-sec">IAP / BeyondCorp</span></span></li>
+          <li><span class="k">"Central misconfig / threat dashboard"</span><span class="a"><span class="pill p-sec">Security Command Center</span></span></li>
+          <li><span class="k">"Mask / redact / tokenize PII"</span><span class="a"><span class="pill p-sec">Sensitive Data Protection</span></span></li>
+          <li><span class="k">"Only signed/attested images deploy"</span><span class="a"><span class="pill p-sec">Binary Authorization</span></span></li>
+          <li><span class="k">"Owner/Editor/Viewer in prod"</span><span class="a"><span class="pill p-sec">⚠ use predefined</span></span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Keys &amp; identity</h3>
+        <ul class="trig">
+          <li><span class="k">"Control key rotation, Google stores"</span><span class="a"><span class="pill p-sec">CMEK (KMS)</span></span></li>
+          <li><span class="k">"Google must never store the key"</span><span class="a"><span class="pill p-sec">CSEK</span></span></li>
+          <li><span class="k">"Keys fully outside Google"</span><span class="a"><span class="pill p-sec">Cloud EKM</span></span></li>
+          <li><span class="k">"FIPS 140-2 Level 3 hardware"</span><span class="a"><span class="pill p-sec">Cloud HSM</span></span></li>
+          <li><span class="k">"AWS/on-prem auth without keys"</span><span class="a"><span class="pill p-sec">Workload Identity Fed.</span></span></li>
+          <li><span class="k">"GKE pod → GCP perms, no node key"</span><span class="a"><span class="pill p-sec">GKE Workload Identity</span></span></li>
+          <li><span class="k">"Restrict creation to EU regions"</span><span class="a"><span class="pill p-sec">Org Policy: locations</span></span></li>
+        </ul>
+        <p class="note"><b>Hierarchy:</b> Org → Folder → Project → Resource; policy is the <b>union</b>, inherited down. A child <b>can't subtract</b> a parent grant → use IAM Deny / Org Policy / VPC-SC.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- OPS -->
+  <section class="d-ops">
+    <div class="sec-head"><span class="num">05</span><h2>Operations, Reliability &amp; Cost</h2><span class="tag">SRE, DR, billing</span></div>
+    <div class="grid cols-3">
+      <div class="card">
+        <h3>SRE &amp; reliability</h3>
+        <ul class="trig">
+          <li><span class="k">"Measured metric"</span><span class="a"><span class="pill p-ops">SLI</span></span></li>
+          <li><span class="k">"Internal target"</span><span class="a"><span class="pill p-ops">SLO</span></span></li>
+          <li><span class="k">"External contract w/ credits"</span><span class="a"><span class="pill p-ops">SLA</span></span></li>
+          <li><span class="k">"100% − SLO, freeze releases"</span><span class="a"><span class="pill p-ops">Error budget</span></span></li>
+          <li><span class="k">"Export logs long-term"</span><span class="a"><span class="pill p-ops">Log sink → BQ/GCS</span></span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Disaster recovery</h3>
+        <div class="tbl-scroll">
+        <table>
+          <thead><tr><th>Need</th><th>Strategy</th></tr></thead>
+          <tbody>
+            <tr><td>Cheapest, hrs OK</td><td><b>Backup &amp; restore</b></td></tr>
+            <tr><td>Minutes</td><td><b>Warm standby</b></td></tr>
+            <tr><td>Near-zero, any cost</td><td><b>Hot / active-active</b></td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p class="note"><b>RPO</b> = data loss · <b>RTO</b> = downtime. Cloud SQL HA = synchronous standby in another zone.</p>
+      </div>
+      <div class="card">
+        <h3>Cost levers</h3>
+        <ul class="trig">
+          <li><span class="k">"Steady 24/7 predictable"</span><span class="a"><span class="pill p-ops">CUD (1/3 yr)</span></span></li>
+          <li><span class="k">"Automatic, no commitment"</span><span class="a"><span class="pill p-ops">Sustained Use</span></span></li>
+          <li><span class="k">"Interruptible batch"</span><span class="a"><span class="pill p-ops">Spot</span></span></li>
+          <li><span class="k">"Analyze / chargeback spend"</span><span class="a"><span class="pill p-ops">Billing → BigQuery</span></span></li>
+        </ul>
+        <p class="note">Budget alerts notify — they do <b>not</b> cap spend.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CASE STUDIES -->
+  <section class="d-case">
+    <div class="sec-head"><span class="num">06</span><h2>Case Studies (v6.1)</h2><span class="tag">~30–40% of the exam — read the PDFs</span></div>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>EHR Healthcare — consistency &amp; reliability</h3>
+        <ul class="trig">
+          <li><span class="k">99.9% containerized apps</span><span class="a"><span class="pill p-case">Regional GKE + Global LB</span></span></li>
+          <li><span class="k">Hybrid mgmt on-prem + cloud</span><span class="a"><span class="pill p-case">GKE Enterprise (Anthos)</span></span></li>
+          <li><span class="k">Secure high-perf on-prem link</span><span class="a"><span class="pill p-case">Dedicated Interconnect</span></span></li>
+          <li><span class="k">Existing Microsoft AD</span><span class="a"><span class="pill p-case">Cloud Identity + GCDS</span></span></li>
+          <li><span class="k">Trends &amp; predictions</span><span class="a"><span class="pill p-case">BigQuery + BQ ML</span></span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Altostrat Media — reliability + cost + GenAI</h3>
+        <ul class="trig">
+          <li><span class="k">Cut storage cost, no manual tiering</span><span class="a"><span class="pill p-case">Autoclass</span></span></li>
+          <li><span class="k">Summarize audio/video</span><span class="a"><span class="pill p-case">Vertex AI + Gemini</span></span></li>
+          <li><span class="k">Block inappropriate content</span><span class="a"><span class="pill p-case">Video Intel + Model Armor</span></span></li>
+          <li><span class="k">24/7 NL chatbot</span><span class="a"><span class="pill p-case">Conversational Agents</span></span></li>
+          <li><span class="k">Explainable AI for auditors</span><span class="a"><span class="pill p-case">Vertex Explainable AI</span></span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Cymbal Retail — cost + applied GenAI + HITL</h3>
+        <ul class="trig">
+          <li><span class="k">Attributes from supplier text+images</span><span class="a"><span class="pill p-case">Gemini (multimodal)</span></span></li>
+          <li><span class="k">Generate/edit product images</span><span class="a"><span class="pill p-case">Imagen</span></span></li>
+          <li><span class="k">NL product discovery</span><span class="a"><span class="pill p-case">Vertex AI Search (commerce)</span></span></li>
+          <li><span class="k">Staff review before publish</span><span class="a"><span class="pill p-case">Human-in-the-Loop gate</span></span></li>
+          <li><span class="k">Cut call-center staffing</span><span class="a"><span class="pill p-case">Dialogflow CX + CCAI</span></span></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>KnightMotives Auto — safety + scale + GDPR</h3>
+        <ul class="trig">
+          <li><span class="k">High-velocity fleet telemetry</span><span class="a"><span class="pill p-case">Pub/Sub → Dataflow</span></span></li>
+          <li><span class="k">AI inference in rural vehicles</span><span class="a"><span class="pill p-case">Google Distributed Cloud edge</span></span></li>
+          <li><span class="k">Keep EU data in EU</span><span class="a"><span class="pill p-case">Org Policy + Assured Workloads</span></span></li>
+          <li><span class="k">Post-breach threat posture</span><span class="a"><span class="pill p-case">SCC Enterprise</span></span></li>
+          <li><span class="k">Monetize governed datasets</span><span class="a"><span class="pill p-case">BigQuery Analytics Hub</span></span></li>
+        </ul>
+      </div>
+    </div>
+    <p class="note" style="margin-top:14px">The <b>executive statement</b> ranks the real priority — when two answers both "work," pick the one matching it and <b>don't over-engineer</b>. Official PDFs live at <code class="svc">services.google.com/fh/files/misc/</code>.</p>
+  </section>
+
+  <!-- 3-DAY PLAN -->
+  <section class="d-ops">
+    <div class="sec-head"><span class="num">07</span><h2>Your 3-Day Plan</h2><span class="tag">drill, don't just read</span></div>
+    <div class="mech">
+      <div class="card">
+        <div class="lbl">Day 1 — Today</div>
+        <div class="big">Triggers</div>
+        <p class="note">Memorize every keyword→service row above (Compute + Storage/DB). Take the 42-Q practice quiz; review every miss.</p>
+      </div>
+      <div class="card">
+        <div class="lbl">Day 2</div>
+        <div class="big">Net · Sec · GenAI</div>
+        <p class="note">Networking + Security/IAM triggers. Read all 4 official case-study PDFs once. Learn the Vertex AI / Gemini / Imagen picks cold.</p>
+      </div>
+      <div class="card">
+        <div class="lbl">Day 3 — Exam eve</div>
+        <div class="big">Re-quiz</div>
+        <p class="note">Re-take the quiz, re-skim the case studies, re-read this sheet. Morning of: read all 4 case studies one more time.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Study aid for the Google Cloud Professional Cloud Architect exam (guide v6.1, verified June 2026). Service mappings are best-practice inference, not Google's official answer keys — treat case-study requirement text as authoritative. Verify volatile details against <a href="https://cloud.google.com/learn/certification/cloud-architect">cloud.google.com/certification</a>.
+  </footer>
+</div>
