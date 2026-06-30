@@ -3563,7 +3563,7 @@ function updateScore(){let ans=0,c=0;for(const k in state){if(state[k].ans!==und
 document.getElementById('reset').onclick=()=>{for(const k in state)delete state[k];flags.clear();cur=0;reviewMode=false;buildFilters();buildDeck();render();updateScore();save();};
 document.getElementById('prevq').onclick=()=>go(cur-1);
 document.getElementById('nextq').onclick=()=>go(cur+1);
-document.getElementById('shuffleq').onclick=()=>{shuffleOn=!shuffleOn;cur=0;buildDeck();render();save();};
+document.getElementById('shuffleq').onclick=()=>{const keep=deck.length?deck[cur]:null;shuffleOn=!shuffleOn;buildDeck();const pos=deck.indexOf(keep);cur=pos>=0?pos:0;render();save();};
 document.getElementById('reviewq').onclick=()=>{reviewMode=!reviewMode;cur=0;buildFilters();buildDeck();render();save();};
 document.getElementById('unansweredq').onclick=()=>{for(let k=1;k<=deck.length;k++){const idx=(cur+k)%deck.length;const s=state[deck[idx]];if(!s||s.ans===undefined){go(idx);return;}}};
 document.getElementById('jumpq').addEventListener('change',e=>{const n=parseInt(e.target.value,10);if(n>=1&&n<=deck.length)go(n-1);});
