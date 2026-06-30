@@ -215,6 +215,9 @@
         <a class="card" href="https://www.youtube.com/playlist?list=PL0azhNeBK66Ib5bdokWTyNyx3srkrzbUo" style="text-decoration:none;color:inherit"><b style="color:var(--compute)">▶ Professional Cloud Architect Bootcamp</b><div style="font-size:12.5px;color:var(--slate);margin-top:4px">End-to-end concept bootcamp.</div></a>
         <a class="card" href="https://www.youtube.com/playlist?list=PLNw3F8v8974Ueh1dOdvhv1j6fv3HrR2ut" style="text-decoration:none;color:inherit"><b style="color:var(--compute)">▶ GCP Professional Cloud Architect</b><div style="font-size:12.5px;color:var(--slate);margin-top:4px">Topic + question coverage series.</div></a>
       </div>
+      <h2 class="sec">More resources</h2>
+      <p style="font-size:13.5px;color:var(--slate)"><a href="https://cloud.google.com/learn/certification/cloud-architect">Official certification page</a> · <a href="https://services.google.com/fh/files/misc/v6.1_pca_professional_cloud_architect_exam_guide_english.pdf">Exam guide v6.1 (PDF)</a> · <a href="https://www.skills.google/paths/12">Google Skills learning path</a> · <a href="https://gocloudcareers.com/gcp-study-guide/">Go Cloud Architects free study guide</a></p>
+      <div class="callout trap"><b>Avoid braindumps.</b> Sites selling "real exam questions, word for word" violate Google's exam terms — using them risks <b>decertification and a ban</b>, and they do not build the judgment the exam tests. Stick to original practice questions (like this hub) and official materials.</div>
       <footer>Built on PCA exam guide v6.1 (verified June 2026). Service mappings are best-practice guidance, not official answer keys. Verify at <a href="https://cloud.google.com/learn/certification/cloud-architect">cloud.google.com/certification</a>.</footer>
     </section>
 
@@ -889,6 +892,50 @@
       <h1 class="pt">EHR Healthcare</h1>
       <p class="lede"><b>Priority signal: operational consistency &amp; reliability.</b> SaaS electronic-health-records provider moving off expiring colo data centers; apps already containerized. Data in MySQL, MS SQL Server, Redis, MongoDB.</p>
       <div class="accent-bar" style="background:var(--case)"></div>
+      <!--FULL:EHR-->
+      <details style="border:1px solid var(--rule);border-radius:9px;margin:8px 0 18px;background:#fff"><summary style="cursor:pointer;padding:12px 16px;font-weight:700;font-size:14px;color:var(--case)">📄 Read the full official case study</summary><div style="padding:6px 18px 16px"><p style="font-size:13px"><a href="https://services.google.com/fh/files/misc/v6.1_pca_ehr_healthcare_case_study_english.pdf">Official source PDF</a></p>
+
+<h3 class="sub">Company Overview</h3>
+<p>EHR Healthcare is a leading provider of electronic health record software to the medical industry. EHR Healthcare provides their software as a service to multi-national medical offices, hospitals, and insurance providers.</p>
+
+<h3 class="sub">Solution Concept</h3>
+<p>Due to rapid changes in the healthcare and insurance industry, EHR Healthcare's business has been growing exponentially year over year. They need to be able to scale their environment, adapt their disaster recovery plan, and roll out new continuous deployment capabilities to update their software at a fast pace. Google Cloud has been chosen to replace their current colocation facilities.</p>
+
+<h3 class="sub">Existing Technical Environment</h3>
+<ul>
+<li>EHR's software is currently hosted in multiple colocation facilities. The lease on one of the data centers is about to expire.</li>
+<li>Customer-facing applications are web-based, and many have recently been containerized to run on a group of Kubernetes clusters. Data is stored in a mixture of relational and NoSQL databases (MySQL, MS SQL Server, Redis, and MongoDB).</li>
+<li>EHR is hosting several legacy file- and API-based integrations with insurance providers on-premises. There are no current plans to upgrade or migrate these legacy systems.</li>
+<li>Users are managed via Microsoft Active Directory. Monitoring is currently being done via various open source tools. Alerts and notifications are sent via email and are often ignored.</li>
+</ul>
+
+<h3 class="sub">Business Requirements</h3>
+<ul>
+<li>On-board new insurance providers as quickly as possible.</li>
+<li>Provide a minimum 99.9% availability for all customer-facing systems.</li>
+<li>Provide centralized visibility and proactive action on system performance and usage.</li>
+<li>Increase ability to provide insights into healthcare trends.</li>
+<li>Reduce latency to all customers.</li>
+<li>Maintain regulatory compliance.</li>
+<li>Decrease infrastructure administration costs.</li>
+<li>Make predictions and generate reports on industry trends based on provider data.</li>
+</ul>
+
+<h3 class="sub">Technical Requirements</h3>
+<ul>
+<li>Maintain legacy interfaces to insurance providers with connectivity to both on-premises systems and cloud providers.</li>
+<li>Provide a consistent way to manage customer-facing applications that are container-based.</li>
+<li>Provide a secure and high-performance connection between on-premises systems and Google Cloud.</li>
+<li>Provide consistent logging, log retention, monitoring, and alerting capabilities.</li>
+<li>Maintain and manage multiple container-based environments.</li>
+<li>Dynamically scale and provision new environments.</li>
+<li>Create interfaces to ingest and process data from new providers.</li>
+</ul>
+
+<h3 class="sub">Executive Statement</h3>
+<div class="callout">
+<p>Our on-premises strategy has worked for years but has required a major investment of time and money in training our team on distinctly different systems, managing similar but separate environments, and responding to outages. Many of these outages have been a result of misconfigured systems, inadequate capacity to manage spikes in traffic, and inconsistent monitoring practices. We want to use Google Cloud to leverage a scalable, resilient platform that can span multiple environments seamlessly and provide a consistent and stable user experience that positions us for future growth.</p>
+</div></div></details>
       <h2 class="sec">Requirements → architecture</h2>
       <div class="tbl"><table>
         <thead><tr><th>Requirement</th><th>Service</th><th>Why</th></tr></thead>
@@ -919,6 +966,51 @@
       <h1 class="pt">Altostrat Media</h1>
       <p class="lede"><b>Priority signal: reliability + cost first, then GenAI.</b> Large audio/video library already on GCP (GKE, Cloud Storage, BigQuery, Cloud Run). Wants GenAI for summaries, metadata, recommendations, harmful-content detection — but the exec ranks reliability and cost control above all.</p>
       <div class="accent-bar" style="background:var(--case)"></div>
+      <!--FULL:ALTO-->
+      <details style="border:1px solid var(--rule);border-radius:9px;margin:8px 0 18px;background:#fff"><summary style="cursor:pointer;padding:12px 16px;font-weight:700;font-size:14px;color:var(--case)">📄 Read the full official case study</summary><div style="padding:6px 18px 16px"><p style="font-size:13px"><a href="https://services.google.com/fh/files/misc/altostrat_media_case_study_english.pdf">Official source PDF</a></p>
+
+<h3 class="sub">Company Overview</h3>
+<p>Altostrat is a prominent player in the media industry, with an extensive collection of audio and video content that comprises podcasts, interviews, news broadcasts, and documentaries. Their success in delivering premium content to a diverse audience requires a content management system that can keep pace with the dynamic media landscape.</p>
+
+<h3 class="sub">Solution Concept</h3>
+<p>Altostrat seeks to modernize its content management and user engagement strategies using Google Cloud's generative AI. They want a platform that empowers customers with personalized recommendations, natural language interactions, and seamless self-service support. Simultaneously, they want to drive revenue growth through dynamic pricing, targeted marketing, and personalized product suggestions. The seamless integration of AI-powered tools into the existing Google Cloud environment will enable Altostrat to efficiently manage their vast media library, enhance user experiences, and unlock new revenue streams.</p>
+
+<h3 class="sub">Existing Technical Environment</h3>
+<ul>
+<li>Altostrat's content management and delivery platform leverages GKE for scalability and high availability, essential for handling their vast media library.</li>
+<li>Their extensive media library spanning various documents, audio and video formats is stored in Cloud Storage.</li>
+<li>To gain valuable insights into user behavior, content consumption patterns, and audience demographics, Altostrat leverages BigQuery as their primary data warehouse.</li>
+<li>Additionally, they use Cloud Run functions for serverless execution of event-driven tasks such as video transcoding, metadata extraction, and personalized content recommendations.</li>
+<li>While Altostrat has made significant strides in cloud adoption, they also maintain some legacy on-premises systems for specific workflows like content ingestion and archival.</li>
+</ul>
+
+<h3 class="sub">Business Requirements</h3>
+<ul>
+<li>Inform content strategy and decision making with data.</li>
+<li>Accelerate and enhance the reliability of operational workflows across all environments.</li>
+<li>Simplify infrastructure management for rapid application deployment.</li>
+<li>Optimize cloud storage costs while maintaining high availability and scalability for media content.</li>
+<li>Enable natural language interaction with the platform with 24/7 user support.</li>
+<li>Automatically generate concise summaries of media content.</li>
+</ul>
+
+<h3 class="sub">Technical Requirements</h3>
+<ul>
+<li>Modernize CI/CD for containerized deployments with a centralized management platform.</li>
+<li>Secure, high-performance hybrid cloud connectivity for data ingestion.</li>
+<li>Provide scalable, performant Kubernetes environments both on-premises and in the cloud.</li>
+<li>Optimize cloud storage costs for growing media volumes.</li>
+<li>Design AI-powered detection of harmful content.</li>
+<li>Ensure that AI systems are auditable and their decisions can be explained.</li>
+<li>Leverage LLMs and conversational AI for personalized experiences and content virality.</li>
+<li>Develop advanced chatbots with natural language understanding to provide personalized assistance.</li>
+<li>Automated summarization for diverse media.</li>
+</ul>
+
+<h3 class="sub">Executive Statement</h3>
+<div class="callout">
+<p>At Altostrat, we are embracing the next frontier of artificial intelligence to revolutionize our content strategy. The seamless integration of AI-powered tools into the existing Google Cloud environment will enable Altostrat to efficiently manage their vast media library, enhance user experiences, and unlock new revenue streams. Google Cloud's generative AI will solidify their leadership in the media industry.</p>
+</div></div></details>
       <h2 class="sec">Requirements → architecture</h2>
       <div class="tbl"><table>
         <thead><tr><th>Requirement</th><th>Service</th><th>Why</th></tr></thead>
@@ -948,6 +1040,48 @@
       <h1 class="pt">Cymbal Retail</h1>
       <p class="lede"><b>Priority signal: cost + applied GenAI + human-in-the-loop.</b> Fast-growing online retailer with a huge catalog. Wants GenAI catalog enrichment, conversational commerce, and a modernized stack — with a required staff approval gate before AI content goes live.</p>
       <div class="accent-bar" style="background:var(--case)"></div>
+      <!--FULL:CYMBAL-->
+      <details style="border:1px solid var(--rule);border-radius:9px;margin:8px 0 18px;background:#fff"><summary style="cursor:pointer;padding:12px 16px;font-weight:700;font-size:14px;color:var(--case)">📄 Read the full official case study</summary><div style="padding:6px 18px 16px"><p style="font-size:13px"><a href="https://services.google.com/fh/files/misc/cymbal_retail_case_study_english.pdf">Official source PDF</a></p>
+
+<h3 class="sub">Company Overview</h3>
+<p>Cymbal is an online retailer experiencing significant growth. The retailer specializes in a large assortment of products spanning several retail sub-verticals, which makes managing their extensive product catalog a constant challenge.</p>
+
+<h3 class="sub">Solution Concept</h3>
+<p>Cymbal wants to modernize its operations and enhance the customer experience in three core areas:</p>
+<ul>
+<li><strong>Catalog and Content Enrichment:</strong> Cymbal wants to automate and improve the accuracy of their product catalog by utilizing Gen AI to generate product attributes, descriptions, and images from supplier-provided information. This solution will streamline their catalog management, reduce manual effort and errors, and ensure information is consistent across all their sales channels.</li>
+<li><strong>Conversational Commerce with Product Discovery:</strong> Cymbal wants to implement a Conversational Commerce solution by integrating AI-powered virtual agents into their website and mobile app to provide customers with a personalized and intuitive shopping experience through natural language conversations. These agents will utilize Google Cloud's Discovery AI to process user requests and retrieve the most relevant products based on each customer's needs and preferences.</li>
+<li><strong>Technical Stack Modernization:</strong> To streamline operations and reduce costs around manual processes, data transfer, error handling and remediation, Cymbal wants to modernize their technical stack with cloud-based infrastructure, secure and efficient data handling, 3rd party integrations, and proactive monitoring and security.</li>
+</ul>
+
+<h3 class="sub">Existing Technical Environment</h3>
+<ul>
+<li>Cymbal currently relies on a mix of on-premises and cloud-based systems with a variety of databases, including MySQL, Microsoft SQL Server, Redis, and MongoDB, to store and manage its vast product catalog and customer data.</li>
+<li>A custom-built web application allows customers to browse the product catalog by querying the relational databases for names and categories of products.</li>
+<li>An IVR (Interactive Voice Response) system handles initial customer calls and routes them to appropriate departments or agents.</li>
+<li>Call center agents receive transferred calls from the IVR system and manually enter orders into the system when a customer cannot complete a transaction on their own.</li>
+<li>Various open source tools for monitoring such as Grafana, Nagios, and Elastic are in use.</li>
+<li>The current technical environment has encountered significant challenges: manual processes are time-consuming and error-prone, data silos limit a unified view of the customer journey, and integrating new technologies is difficult.</li>
+</ul>
+
+<h3 class="sub">Business Requirements</h3>
+<ul>
+<li><strong>Automate Product Catalog Enrichment:</strong> Reduce manual effort, minimize errors, and ensure accuracy and consistency across the product catalog.</li>
+<li><strong>Drive Sales Conversion:</strong> Provide a more intuitive and helpful shopping experience to improve sales conversion rates and drive revenue growth.</li>
+<li><strong>Reduce costs:</strong> Reduce call center staffing costs and data-center hosting costs.</li>
+</ul>
+
+<h3 class="sub">Technical Requirements</h3>
+<ul>
+<li><strong>Attribute Generation:</strong> Accurately derive relevant product attributes from various supplier data, including titles, descriptions, and images, ensuring the attributes align with the product category and Cymbal's existing catalog structure.</li>
+<li><strong>Image Generation and Enhancement:</strong> Generate different product image variations from a base image (e.g., showcasing various colors). It should also support background changes, product color adjustments, and the addition of text overlays.</li>
+<li><strong>Automate Product Discovery:</strong> Process customer requests expressed in natural language and return highly relevant product results.</li>
+</ul>
+
+<h3 class="sub">Executive Statement</h3>
+<div class="callout">
+<p>By implementing Google Cloud's Gen AI for Digital Commerce solutions, Cymbal can transform its online retail operations to improve efficiency, enhance customer experience, and drive revenue growth.</p>
+</div></div></details>
       <h2 class="sec">Requirements → architecture</h2>
       <div class="tbl"><table>
         <thead><tr><th>Requirement</th><th>Service</th><th>Why</th></tr></thead>
@@ -977,6 +1111,53 @@
       <h1 class="pt">KnightMotives Automotive</h1>
       <p class="lede"><b>Priority signal: safety + data at scale + security/GDPR.</b> Autonomous-vehicle maker; massive telemetry, legacy mainframe/ERP, past data breaches, hard EU/GDPR residency requirement, poor rural connectivity. Wants a consistent AI in-vehicle experience and data monetization.</p>
       <div class="accent-bar" style="background:var(--case)"></div>
+      <!--FULL:KNIGHT-->
+      <details style="border:1px solid var(--rule);border-radius:9px;margin:8px 0 18px;background:#fff"><summary style="cursor:pointer;padding:12px 16px;font-weight:700;font-size:14px;color:var(--case)">📄 Read the full official case study</summary><div style="padding:6px 18px 16px"><p style="font-size:13px"><a href="https://services.google.com/fh/files/misc/v6.1_pca_knightmotives_automotive_case_study_english.pdf">Official source PDF</a></p>
+
+<h3 class="sub">Company Overview</h3>
+<p>KnightMotives is a global automotive manufacturer focused on modernizing the consumer experience across all vehicle types by leveraging AI and improving their online ordering system. KnightMotives provides connected-car services and gathers telemetry from vehicles to improve maintenance and driver services, and shares selective data with partners such as insurers and dealerships.</p>
+
+<h3 class="sub">Solution Concept</h3>
+<p>KnightMotives wants to shift from manufacturing cars to creating a complete and compelling "automotive experience." Their strategy prioritizes delivering a consistent experience across all models, developing AI-powered features, generating new revenue from data monetization, adopting a digital focus to differentiate their brand from competitors, and developing better tools for mechanics and salespeople. Google Cloud has been selected to help KnightMotives modernize their IT infrastructure and enable real-time data capabilities at global scale.</p>
+
+<h3 class="sub">Existing Technical Environment</h3>
+<ul>
+<li>KnightMotives's IT is largely on-premises with some applications on major cloud platforms.</li>
+<li>Their supply chain runs on an outdated mainframe, and Enterprise Resource Planning (ERP) is also outdated, making new promotions and dealer discounts difficult to implement.</li>
+<li>Dealers have no budget for new equipment.</li>
+<li>There is fragmentation across vehicles with multiple code bases, and significant technical debt from supporting backwards compatibility.</li>
+<li>Network connectivity to manufacturing plants and vehicle connectivity in rural areas are ongoing challenges.</li>
+<li>Security is a paramount concern due to past data breaches.</li>
+<li>Adherence to European Union (EU) data protection regulations, especially for emerging autonomous platforms, is critical.</li>
+<li>Vehicle data is currently batch-uploaded from vehicles to an on-premises data center, which limits scalability and real-time analysis.</li>
+</ul>
+
+<h3 class="sub">Business Requirements</h3>
+<ul>
+<li>Foster a personalized relationship with the driver and deliver a cohesive experience across all KnightMotives vehicle models.</li>
+<li>Improve the online build-to-order system to provide a delightful experience for dealers and customers.</li>
+<li>Develop modern dealer tools to streamline dealer operations, including sales, service, and inventory management.</li>
+<li>Implement a comprehensive Customer Relationship Management (CRM) system to track customer interactions, personalize experiences, and improve customer satisfaction.</li>
+<li>Generate new revenue streams through data monetization while maintaining data privacy and regulatory compliance.</li>
+<li>Differentiate the KnightMotives brand from competitors through a digital-first approach and AI-powered features.</li>
+</ul>
+
+<h3 class="sub">Technical Requirements</h3>
+<ul>
+<li>Modernize the in-vehicle experience by developing a consistent user experience (UX) that seamlessly integrates AI-powered features across all models.</li>
+<li>Update in-vehicle hardware and software in legacy models to support new UX features and AI capabilities.</li>
+<li>Ensure reliable network connectivity, especially in rural areas, to support real-time AI features and data transmission.</li>
+<li>Provide scalable, real-time ingestion of vehicle telemetry data (location, sensor readings, etc.) at global scale, replacing the current batch-upload approach.</li>
+<li>Respect data locality by keeping regional data in-region to meet EU data protection regulations and other applicable compliance requirements.</li>
+<li>Expose data to partners (insurers, dealerships) via secure APIs without compromising security.</li>
+<li>Modernize the outdated ERP and supply chain systems to support dynamic pricing, new promotions, and dealer discount management.</li>
+<li>Implement comprehensive security controls and monitoring to address past data breach vulnerabilities.</li>
+</ul>
+
+<h3 class="sub">Executive Statement</h3>
+<div class="callout">
+<p>KnightMotives is committed to enhancing safety and saving lives by leveraging an extensive body of data — encompassing driving, road conditions, behavioral studies, and crash safety statistics — to create compelling digital experiences for drivers. Our AI consistently outperforms national safety statistics, ensuring the unique and coveted KnightMotives experience is aligned across all our vehicle models. — Michael Knight, KnightMotives CEO</p>
+</div></div></details>
       <h2 class="sec">Requirements → architecture</h2>
       <div class="tbl"><table>
         <thead><tr><th>Requirement</th><th>Service</th><th>Why</th></tr></thead>
